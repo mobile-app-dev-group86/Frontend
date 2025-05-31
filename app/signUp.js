@@ -2,11 +2,12 @@ import react, {useState} from 'react';
 import {View,Text,TextInput,TouchableOpacity,StyleSheet,Image,Pressable} from 'react-native';
 import googleLogo from '../assets/images/google.png';
 import facebookLogo from '../assets/images/facebook.png';
+import { Link } from 'expo-router';
 
 const signUpScreen =()=>{
     const[userName,setUserName]=useState('');
     const[password,setPassword]=useState('');
-    
+
     const [showPassword, setShowPassword] = useState(false);
     const[confirmPassword,setConfirmPassword]=useState('');
     const [showConfirmPassword, setShowConfirm] = useState(false);
@@ -50,8 +51,8 @@ const signUpScreen =()=>{
         <Image
           source={
             showPassword
-              ? require('../assets/images/hide.png') 
-              : require('../assets/images/view.png')     
+              ? require('../assets/images/view.png') 
+              : require('../assets/images/hide.png')     
           }
           style={styles.eyeIcon}
         />
@@ -80,8 +81,8 @@ const signUpScreen =()=>{
         <Image
           source={
             showConfirmPassword
-              ? require('../assets/images/hide.png') 
-              : require('../assets/images/view.png')     
+              ? require('../assets/images/view.png') 
+              : require('../assets/images/hide.png')     
           }
           style={styles.eyeIcon}
         />
@@ -111,12 +112,12 @@ const signUpScreen =()=>{
 
                </View>
           <View style={{alignItems: 'center',flexDirection: 'row',justifyContent: 'center',gap:20}}>
-            <View style={styles.circle}> <Image source={googleLogo} style={{width:"30", height:'30',resizeMode:'contain'}}></Image></View>
+            <View style={styles.circle}> <Image source={googleLogo} style={{width:"40", height:'40',resizeMode:'contain'}}></Image></View>
             <View style={styles.circle}><Image source={facebookLogo} style={{width:"50", height:'50'}}></Image></View>
           </View>
 
-          <View style={{alignItems:'center',marginTop:10}}>
-            <Text>Already have an account? Sign In</Text>
+          <View style={{alignItems:'center',justifyContent:'center',marginTop:10, flexDirection:'row'}}>
+            <Text>Already have an account?</Text><Link href="/loginScreen" style={{color:'green'}}> Log In</Link>
           </View>
 
         </View>
@@ -245,7 +246,7 @@ circle: {
   width: 50,
   height: 50,
   borderRadius: 25,
-  borderWidth: 1,               
+  borderWidth: 0.5,               
   borderColor: '#333',     
   justifyContent: 'center',
   alignItems: 'center',
