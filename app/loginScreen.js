@@ -1,26 +1,28 @@
 import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useState } from "react";
 import {
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import facebookLogo from "../assets/images/facebook.png";
 import googleLogo from "../assets/images/google.png";
 
-const LogInScreen = () => {
+const LoginScreen = () => {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleLogin = async () => {
     setError("");
@@ -31,13 +33,13 @@ const LogInScreen = () => {
 
     setLoading(true);
 
-    // Placeholder API call simulation
+    
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     setLoading(false);
 
     Alert.alert("Login Success", `Welcome, ${userName}!`);
-    // TODO: Navigate to next screen or store token here
+    
   };
 
   return (
@@ -49,20 +51,19 @@ const LogInScreen = () => {
         <Text style={styles.title}>Login</Text>
 
         {error !== "" && <Text style={styles.errorText}>{error}</Text>}
-
+       <Text>Username</Text>
         <TextInput
           style={styles.input}
-          placeholder="Username"
           value={userName}
           onChangeText={setUserName}
           autoCapitalize="none"
           keyboardType="default"
         />
 
+       <Text>Password</Text>
         <View style={styles.passwordContainer}>
           <TextInput
             style={styles.passwordInput}
-            placeholder="Password"
             secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
@@ -82,17 +83,20 @@ const LogInScreen = () => {
             />
           </TouchableOpacity>
         </View>
-        <View style={{}}><Link href="/forgotPassword" style={{color:'green',textAlign:'right'}}>Forgot Password?</Link></View>
+        <View style={{marginBottom:10}}> <TouchableOpacity onPress={() => router.push('/forgotPassword')}>
+            <Text style={{ color: 'green', textAlign: 'right' }}>Forgot Password?</Text>
+          </TouchableOpacity></View>
+       
 
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          <Text style={styles.buttonText}>
-            {loading ? "Logging in..." : "Log In"}
-          </Text>
-        </TouchableOpacity>
+       <TouchableOpacity
+  style={[styles.button, loading && styles.buttonDisabled]}
+  onPress={loading ? null : () => router.push('./homeScreen')} // or your handleLogin
+  disabled={loading}
+>
+  <Text style={styles.buttonText}>
+    {loading ? "Logging in..." : "Log In"}
+  </Text>
+</TouchableOpacity>
 
         <View style={styles.dividerContainer}>
           <View style={styles.line} />
@@ -120,7 +124,13 @@ const LogInScreen = () => {
               style={{ width: 40, height: 40, resizeMode: "contain" }}
             />
           </View>
+          
         </View>
+        <View style={{alignItems:'center',justifyContent:'center',marginTop:10, flexDirection:'row'}}>
+            <Text>Don't have an account?</Text> <TouchableOpacity onPress={() => router.push('/signUp')}>
+            <Text style={{ color: 'green' }}> Sign Up</Text>
+          </TouchableOpacity>
+          </View>
 
         
       </KeyboardAvoidingView>
@@ -128,7 +138,7 @@ const LogInScreen = () => {
   );
 };
 
-export default LogInScreen;
+
 
 const styles = StyleSheet.create({
   container: {
@@ -186,6 +196,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 16,
+
   },
   errorText: {
     color: "red",
@@ -217,3 +228,5 @@ const styles = StyleSheet.create({
 },
   
 });
+
+export default LoginScreen;

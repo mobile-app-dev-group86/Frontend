@@ -1,6 +1,9 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Ionicons from '@expo/vector-icons/Ionicons';
+{/* <Ionicons name="notifications" size={24} color="black" /> */}
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -14,39 +17,45 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+      
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
+         ios: {
+            
             position: 'absolute',
+            backgroundColor: 'lightgreen', 
           },
-          default: {},
+          default: {
+            backgroundColor: 'lightgreen', 
+          },
         }),
       }}>
+        <Tabs.Screen
+        name="homeScreen"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color }) => <Ionicons name="home-outline" size={24} color="black" />,
+        }}
+      />
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Notification',
+          tabBarIcon: ({ color }) => <Ionicons name="notifications-outline" size={24} color="black;" />,
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'You',
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="person-outline" color="black" />,
         }}
       />
-      <Tabs.Screen
-        name="welcomeScreen"
-        options={{
-          title: 'WelcomeScreen',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
+    
+      
     </Tabs>
   );
 }

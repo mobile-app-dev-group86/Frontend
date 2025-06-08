@@ -25,7 +25,7 @@ export default function WelcomeScreen() {
           pressed && styles.buttonPressed,
         ]}
       >
-        <Link href="/signUp" asChild>
+        <Link href="/loginScreen" asChild>
           <Pressable
             onPressIn={() => setPressed(true)}
             onPressOut={() => setPressed(false)}

@@ -1,12 +1,17 @@
-import react, {useState} from 'react';
-import {View,Text,TextInput,TouchableOpacity,StyleSheet,Image,Pressable} from 'react-native';
-import googleLogo from '../assets/images/google.png';
-import facebookLogo from '../assets/images/facebook.png';
-import { Link } from 'expo-router';
 
-const signUpScreen =()=>{
+import { useRouter } from 'expo-router';
+
+import { useState } from 'react';
+import { Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import facebookLogo from '../assets/images/facebook.png';
+import googleLogo from '../assets/images/google.png';
+
+const signUp =()=>{
     const[userName,setUserName]=useState('');
     const[password,setPassword]=useState('');
+    const[email,setUserEmail]=useState('');
+    const router = useRouter();
+
 
     const [showPassword, setShowPassword] = useState(false);
     const[confirmPassword,setConfirmPassword]=useState('');
@@ -18,18 +23,31 @@ const signUpScreen =()=>{
             alert("Password mismatch");
             return;
         }
-        console.log("Signing up with:",userName,password)
+        console.log("Signing up with:",email,userName,password)
     };
     return(
+
+     
+
         <View style={styles.container}>
             <View style={{height:'5%'}}></View>
     
             <Text style={styles.title}>Sign Up</Text>
+
+           <Text>Email</Text>
+            <TextInput
+            style={styles.input}
+            autoCapitalize='none'
+            keyboardType='email-address'
+            value={email}
+            onChangeText={setUserEmail}
+            />
+
            <Text>Username</Text>
             <TextInput
             style={styles.input}
             autoCapitalize='none'
-            keyboardType='text'
+            keyboardType='Default'
             value={userName}
             onChangeText={setUserName}
             />
@@ -100,10 +118,15 @@ const signUpScreen =()=>{
       <Text style={styles.label}>I agree to the Terms and Conditions</Text>
     </View>
 
-            <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>Sign Up</Text>
+           <TouchableOpacity
+  style={styles.button}
+  onPress={mismatch}
+  disabled={!checked}
+>
+  <Text style={styles.buttonText}>Sign Up</Text>
+</TouchableOpacity>
 
-            </TouchableOpacity>
+
            
               <View style={styles.dividerContainer}>
                   <View style={styles.line} />
@@ -112,13 +135,17 @@ const signUpScreen =()=>{
 
                </View>
           <View style={{alignItems: 'center',flexDirection: 'row',justifyContent: 'center',gap:20}}>
-            <View style={styles.circle}> <Image source={googleLogo} style={{width:"40", height:'40',resizeMode:'contain'}}></Image></View>
+            <View style={styles.circle}> <Image source={googleLogo} style={{width:40, height:40,resizeMode:'contain'}}></Image></View>
             <View style={styles.circle}><Image source={facebookLogo} style={{width:"50", height:'50'}}></Image></View>
           </View>
-
+        
           <View style={{alignItems:'center',justifyContent:'center',marginTop:10, flexDirection:'row'}}>
-            <Text>Already have an account?</Text><Link href="/loginScreen" style={{color:'green'}}> Log In</Link>
+            <Text>Already have an account?</Text><TouchableOpacity onPress={() => router.push('/loginScreen')}>
+            <Text style={{ color: 'green' }}> Log In</Text>
+          </TouchableOpacity>
           </View>
+        
+       
 
         </View>
 
@@ -255,4 +282,4 @@ circle: {
 });
 
 
-export default signUpScreen;
+export default signUp;

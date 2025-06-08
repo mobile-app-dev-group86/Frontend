@@ -1,19 +1,45 @@
-import react, {useState} from 'react';
-import {View,Text,TextInput,TouchableOpacity,StyleSheet,Image,Pressable} from 'react-native';
+import { useRouter } from 'expo-router';
+
+import { Link } from 'expo-router';
+import { useState } from 'react';
+import {
+  Image, Pressable,
+  StyleSheet,
+  Text, TextInput, TouchableOpacity,
+  View
+} from 'react-native';
 
 import Feather from '@expo/vector-icons/Feather';
 
 const forgotPassword =()=>{
-    const [userName, setUserName] = useState("");
-      const [password, setPassword] = useState("");
-      const [showPassword, setShowPassword] = useState(false);
+      const router=useRouter();
+
+      const[userName,setUserName]=useState('');
+    const[password,setPassword]=useState('');
+
+    const [showPassword, setShowPassword] = useState(false);
+    const[confirmPassword,setConfirmPassword]=useState('');
+    const [showConfirmPassword, setShowConfirm] = useState(false);
 
       return(
-        <View>
-
-    <View style={styles.circle}><Feather name="arrow-left" size={24} color="black" /></View>
+        <View style={styles.container}>
+<Pressable onPress={()=>router.back()}>
+  <View style={styles.ring} ><Feather name="arrow-left" size={24} color="black" /></View>
+  </Pressable>
+    <View style={styles.psdTitle}><Text style={styles.title}>Create New Password</Text></View>
   
-  <Text>Password</Text>
+  
+
+  <Text>Username</Text>
+              <TextInput
+              style={styles.input}
+              autoCapitalize='none'
+              keyboardType='text'
+              value={userName}
+              onChangeText={setUserName}
+              />
+   
+             <Text>Password</Text>
             <View style={styles.passwordContainer}>           
               <TextInput
               style={styles.passwordInput}
@@ -37,7 +63,11 @@ const forgotPassword =()=>{
           />
         </TouchableOpacity>
         </View>
-     
+  
+  
+       
+  
+              
   
               <Text>Confirm Password</Text>
               <View style={styles.passwordContainer}>
@@ -62,8 +92,26 @@ const forgotPassword =()=>{
             style={styles.eyeIcon}
           />
         </TouchableOpacity>
+
+        <View style={{alignItems:'center',justifyContent:'center',marginTop:10, flexDirection:'row'}}>
+                    <Text>Don't have an account?</Text><Link href="/codeVerification" style={{color:'green'}}> verify</Link>
+                  </View>
+
+          
+          <View style={{alignItems:'center',justifyContent:'center',marginTop:10, flexDirection:'row'}}>
+                    <Text>Don't have an account?</Text><Link href="/homeScreen" style={{color:'green'}}> home</Link>
+                  </View>
+        
   
               </View>
+  
+
+
+
+
+
+
+
 
               <View>
 
@@ -80,16 +128,24 @@ const forgotPassword =()=>{
 
 const styles=StyleSheet.create({
 
+
+  container: {
+    flex: 1,
+    padding: 24,
+    justifyContent: '',
+    backgroundColor: '#fff'},
+
 passwordContainer: {
     position: 'relative',
     marginBottom: 15,
+
   },
   passwordInput: {
     padding: 12,
     paddingRight: 45,
     borderWidth: 1,
     borderRadius: 8,
-    borderColor: '#ccc',
+    borderColor: 'black',
     fontSize: 16,
   },
   eyeButton: {
@@ -102,14 +158,15 @@ passwordContainer: {
     height: 24,
   },
 
-  circle: {
+  ring: {
   width: 50,
   height: 50,
   borderRadius: 25,
   borderWidth: 0.5,               
-  borderColor: '#333',     
+  borderColor: 'green',     
   justifyContent: 'center',
   alignItems: 'center',
+  
 },
 
  button: {
@@ -125,8 +182,33 @@ passwordContainer: {
     fontWeight: 'bold',
   },
 
+  title: {
+    fontSize: 25,
+    fontWeight: 'bold',
+    marginBottom: 50,
+    marginTop: 50,
+    textAlign: 'center',
+  },
+  psdTitle:{
+
+  },
+  input:{
+    padding: 12,
+    paddingRight: 45,
+    borderWidth: 1,
+    borderRadius: 8,
+    borderColor: 'black',
+    fontSize: 16,
+     
+
+  }
 
 
 
-})
+
+
+
+});
+
+export default forgotPassword;
 
