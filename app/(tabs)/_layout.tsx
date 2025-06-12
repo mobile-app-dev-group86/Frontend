@@ -1,12 +1,9 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
-{/* <Ionicons name="notifications" size={24} color="black" /> */}
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -17,45 +14,41 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-      
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
-         ios: {
-            
+          ios: {
             position: 'absolute',
-            backgroundColor: 'lightgreen', 
+            backgroundColor: 'lightgreen',
           },
           default: {
-            backgroundColor: 'lightgreen', 
+            backgroundColor: 'lightgreen',
           },
         }),
       }}>
-        <Tabs.Screen
+      <Tabs.Screen
         name="homeScreen"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Ionicons name="home-outline" size={24} color="black" />,
+          tabBarIcon: ({ color }) => <Ionicons name="home-outline" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Notification',
-          tabBarIcon: ({ color }) => <Ionicons name="notifications-outline" size={24} color="black;" />,
+          title: 'Notifications',
+          tabBarIcon: ({ color }) => <Ionicons name="notifications-outline" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
           title: 'You',
-          tabBarIcon: ({ color }) => <Ionicons size={28} name="person-outline" color="black" />,
+          tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
         }}
       />
-    
-      
     </Tabs>
   );
 }

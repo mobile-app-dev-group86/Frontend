@@ -94,13 +94,11 @@ const forgotPassword =()=>{
         </TouchableOpacity>
 
         <View style={{alignItems:'center',justifyContent:'center',marginTop:10, flexDirection:'row'}}>
-                    <Text>Don't have an account?</Text><Link href="/codeVerification" style={{color:'green'}}> verify</Link>
+                  <Link href="/codeVerification" style={{color:'green'}}> verify code</Link>
                   </View>
 
           
-          <View style={{alignItems:'center',justifyContent:'center',marginTop:10, flexDirection:'row'}}>
-                    <Text>Don't have an account?</Text><Link href="/homeScreen" style={{color:'green'}}> home</Link>
-                  </View>
+          
         
   
               </View>

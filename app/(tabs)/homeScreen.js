@@ -14,13 +14,15 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 // {/* <Ionicons name="notifications" size={24} color="black" /> */}
 import homeimage from '../../assets/images/homeimage.png';
 import gamepad from '../../assets/images/gamepad.jpg';
+import { useRouter } from 'expo-router';
 
 
 
 // import React from 'react';
-import { View, StyleSheet, SafeAreaView,Text,Image,TouchableOpacity } from 'react-native';
+import { View, StyleSheet, SafeAreaView,Text,Image,TouchableOpacity,router } from 'react-native';
 
 export default function homeScreen() {
+  const router = useRouter();
   return (
     <SafeAreaView style={styles.container}>
       
@@ -34,24 +36,37 @@ export default function homeScreen() {
                    
                   
                 /></View>
-        <View style={styles.circle} ><FontAwesome6 name="add" size={24} color="#009E60" /></View>
-        <View style={styles.circle} ><FontAwesome5 name="network-wired" size={24} color="#009E60" /></View>
-        <View style={styles.circle} > <Feather name="message-circle" size={24} color="#009E60" /></View>
-      </View>
+        <TouchableOpacity onPress={() => router.push('/createServer')}>
+  <View style={styles.circle}>
+    <FontAwesome6 name="add" size={24} color="#009E60" />
+  </View>
+</TouchableOpacity>
+
+<TouchableOpacity onPress={() => router.push('/network')}>
+  <View style={styles.circle}>
+    <FontAwesome5 name="network-wired" size={24} color="#009E60" />
+  </View>
+</TouchableOpacity>
+
+<TouchableOpacity onPress={() => router.push('/messages')}>
+  <View style={styles.circle}>
+    <Feather name="message-circle" size={24} color="#009E60" />
+  </View>
+</TouchableOpacity> </View>
 
       <View style={styles.mainArea}>
-      <Text style={{fontSize:40}}>Servers</Text>
+      <Text style={{fontSize:40,}}>Servers</Text>
 
 
  <Image
                   
                    source={homeimage} 
-                   style={{ width: 250, height: 300,marginTop: 20,marginLeft: 20,paddingLeft:10,  }}       
+                   style={{ width: 200, height: 200,marginTop: 20,marginLeft: 20,paddingLeft:10,  }}       
                   
                   
                 />
                 <View style={{alignItems: 'center', justifyContent: 'center',}}>
-                <Text style={{fontSize:30}}>Ready For a {'\n'}
+                <Text style={{fontSize:25,color:'#2C2C2C'}}>Ready For a {'\n'}
                  next-level group {'\n'}
                   chat?</Text>
                 </View>
@@ -131,6 +146,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderBottomLeftRadius: 20,
     paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    
    },
   // bottomBar: {
   //   position: 'absolute',
@@ -168,17 +186,17 @@ button: {
     backgroundColor: 'green',
     padding: 12,
     borderRadius: 20,
-      marginTop: 12,
-      height:60,
-      width:300,
+      marginTop: 20,
+      height:55,
+      width:200,
     },
 button1: {
     backgroundColor: 'white',
-    padding: 12,
+    padding: 10,
     borderRadius: 20,
-      marginTop: 12,
-      height:60,
-      width:300,
+      marginTop: 20,
+      height:55,
+      width:200,
       borderColor: 'green',
       borderWidth: 2,
     },
@@ -189,7 +207,7 @@ button1: {
     color: '#fff',
     textAlign: 'center',
     fontWeight: 'bold',
-    fontSize:30,
+    fontSize:20,
   },
 
 
@@ -198,7 +216,7 @@ buttonText1: {
     textAlign: 'center',
     justifyContent: 'center',
     fontWeight: 'bold',
-    fontSize:30,}
+    fontSize:20,}
 
   
 });

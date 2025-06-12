@@ -1,20 +1,22 @@
 {
   "expo": {
-    "name": "",
+    "name": "Chatterly",
     "slug": "chatterly",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/chatterlylogo.png",
+    "scheme": "frontend",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
-      "supportsTablet": true
+    "supportsTablet": true,
+    "bundleIdentifier": "com.yourcompany.chatterly"
+  },
+  "android": {
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/images/adaptive-icon.png",
+      "backgroundColor": "#ffffff"
     },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
       "edgeToEdgeEnabled": true
     },
     "web": {
