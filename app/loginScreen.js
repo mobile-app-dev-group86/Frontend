@@ -25,22 +25,43 @@ const LoginScreen = () => {
   const router = useRouter();
 
   const handleLogin = async () => {
-    setError("");
-    if (!userName || !password) {
-      setError("Please enter both username and password.");
-      return;
+  setError("");
+  if (!userName || !password) {
+    setError("Please enter both username and password.");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await fetch("http://192.168.0.105:8080/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: userName,
+        password: password,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Login failed");
     }
 
-    setLoading(true);
+    const data = await response.json();
 
-    
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    setLoading(false);
-
+    // If backend sends a token, you can store it here
     Alert.alert("Login Success", `Welcome, ${userName}!`);
-    
-  };
+    router.push("./homeScreen");
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -90,7 +111,7 @@ const LoginScreen = () => {
 
        <TouchableOpacity
   style={[styles.button, loading && styles.buttonDisabled]}
-  onPress={loading ? null : () => router.push('./homeScreen')} // or your handleLogin
+  onPress={loading ? null : handleLogin} // or your handleLogin
   disabled={loading}
 >
   <Text style={styles.buttonText}>
@@ -112,18 +133,22 @@ const LoginScreen = () => {
             marginBottom: 20,
           }}
         >
+          <TouchableOpacity>
           <View style={styles.circle}>
             <Image
               source={googleLogo}
               style={{ width: 40, height: 40, resizeMode: "contain" }}
             />
           </View>
+          </TouchableOpacity>
+          <TouchableOpacity>
           <View style={styles.circle}>
             <Image
               source={facebookLogo}
               style={{ width: 40, height: 40, resizeMode: "contain" }}
             />
           </View>
+          </TouchableOpacity>
           
         </View>
         <View style={{alignItems:'center',justifyContent:'center',marginTop:10, flexDirection:'row'}}>

@@ -18,13 +18,44 @@ const signUp =()=>{
     const [showConfirmPassword, setShowConfirm] = useState(false);
     const [checked, setChecked] = useState(false);
 
-    const mismatch=()=>{
-        if(password!==confirmPassword){
-            alert("Password mismatch");
-            return;
-        }
-        console.log("Signing up with:",email,userName,password)
-    };
+    const mismatch = async () => {
+  if (password !== confirmPassword) {
+    alert("Passwords do not match");
+    return;
+  }
+
+  try {
+    const response = await fetch("http://10.40.32.71:8080/api/auth/register"
+
+, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: userName,
+        email: email,
+        password: password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      console.log('Signup successful:', data);
+      // Optionally store tokens
+      // await AsyncStorage.setItem('accessToken', data.accessToken);
+      alert("Signup successful");
+      router.push('/loginScreen');
+    } else {
+      alert(data || "Signup failed");
+    }
+  } catch (error) {
+    console.error("Error during signup:", error);
+    alert("An error occurred");
+  }
+};
+
     return(
 
      
@@ -134,9 +165,14 @@ const signUp =()=>{
                   <View style={styles.line} />
 
                </View>
+               
           <View style={{alignItems: 'center',flexDirection: 'row',justifyContent: 'center',gap:20}}>
+            <TouchableOpacity>
             <View style={styles.circle}> <Image source={googleLogo} style={{width:40, height:40,resizeMode:'contain'}}></Image></View>
+            </TouchableOpacity>
+            <TouchableOpacity>
             <View style={styles.circle}><Image source={facebookLogo} style={{width:"50", height:'50'}}></Image></View>
+            </TouchableOpacity>
           </View>
         
           <View style={{alignItems:'center',justifyContent:'center',marginTop:10, flexDirection:'row'}}>

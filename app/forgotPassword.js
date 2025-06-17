@@ -94,7 +94,7 @@ const forgotPassword =()=>{
         </TouchableOpacity>
 
         <View style={{alignItems:'center',justifyContent:'center',marginTop:10, flexDirection:'row'}}>
-                  <Link href="/codeVerification" style={{color:'green'}}> verify code</Link>
+                  <Link href="/codeVerification" style={{color:'green'}}><Text> verify code</Text></Link>
                   </View>
 
           
