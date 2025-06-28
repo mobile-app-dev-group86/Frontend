@@ -59,6 +59,7 @@ const codeVerification = () => {
         </TouchableOpacity>
 
         
+        
       </View>
     </View>
   );

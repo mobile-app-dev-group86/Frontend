@@ -13,6 +13,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      initialRouteName="homeScreen"
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
@@ -27,26 +28,33 @@ export default function TabLayout() {
             backgroundColor: 'lightgreen',
           },
         }),
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="homeScreen"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Ionicons name="home-outline" size={24} color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="home-outline" size={24} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="index"
         options={{
           title: 'Notifications',
-          tabBarIcon: ({ color }) => <Ionicons name="notifications-outline" size={24} color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="notifications-outline" size={24} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
           title: 'You',
-          tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="person-outline" size={24} color={color} />
+          ),
         }}
       />
     </Tabs>

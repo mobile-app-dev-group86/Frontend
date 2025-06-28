@@ -18,15 +18,17 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+      <Stack initialRouteName="welcomeScreen">
         <Stack.Screen name="welcomeScreen" options={{ headerShown: false }} />
         <Stack.Screen name="signUp" options={{ headerShown: false }} />
         <Stack.Screen name="loginScreen" options={{ headerShown: false }} />
         <Stack.Screen name="codeVerification" options={{ headerShown: false }} />
         <Stack.Screen name="forgotPassword" options={{ headerShown: false }} />
-        <Stack.Screen name="homeScreen" options={{ headerShown: false }} />
-        <Stack.Screen name="additionScreen" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="additionScreen" options={{ headerShown: false }} />
+        <Stack.Screen name="template" options={{ headerShown: false }} />
+        <Stack.Screen name="template2" options={{ headerShown: false }} />
+        <Stack.Screen name="createServer" options={{ headerShown: false }} />
         <Stack.Screen name="(modal)" options={{ presentation: 'modal' }} />
         <Stack.Screen name="not-found" options={{ title: 'Oops!' }} />
       </Stack>

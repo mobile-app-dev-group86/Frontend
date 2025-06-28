@@ -1,4 +1,3 @@
-import { Link } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { useState } from "react";
 import {
@@ -12,56 +11,68 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ScrollView,
 } from "react-native";
 import facebookLogo from "../assets/images/facebook.png";
 import googleLogo from "../assets/images/google.png";
 
 const LoginScreen = () => {
-  const [userName, setUserName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   const handleLogin = async () => {
-  setError("");
-  if (!userName || !password) {
-    setError("Please enter both username and password.");
-    return;
-  }
+    setError("");
 
-  setLoading(true);
-
-  try {
-    const response = await fetch("http://192.168.0.105:8080/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: userName,
-        password: password,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Login failed");
+    if (!email || !password) {
+      setError("Please enter both email and password.");
+      return;
     }
 
-    const data = await response.json();
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
 
-    // If backend sends a token, you can store it here
-    Alert.alert("Login Success", `Welcome, ${userName}!`);
-    router.push("./homeScreen");
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      return;
+    }
 
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://192.168.12.248:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const text = await response.text();
+      console.log("Raw response:", text);
+
+      if (response.ok) {
+        router.push("/homeScreen");
+      } else {
+        setError(text);
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Something went wrong. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -72,16 +83,17 @@ const LoginScreen = () => {
         <Text style={styles.title}>Login</Text>
 
         {error !== "" && <Text style={styles.errorText}>{error}</Text>}
-       <Text>Username</Text>
+
+        <Text>Email</Text>
         <TextInput
           style={styles.input}
-          value={userName}
-          onChangeText={setUserName}
+          value={email}
+          onChangeText={setEmail}
           autoCapitalize="none"
-          keyboardType="default"
+          keyboardType="email-address"
         />
 
-       <Text>Password</Text>
+        <Text>Password</Text>
         <View style={styles.passwordContainer}>
           <TextInput
             style={styles.passwordInput}
@@ -104,20 +116,22 @@ const LoginScreen = () => {
             />
           </TouchableOpacity>
         </View>
-        <View style={{marginBottom:10}}> <TouchableOpacity onPress={() => router.push('/forgotPassword')}>
-            <Text style={{ color: 'green', textAlign: 'right' }}>Forgot Password?</Text>
-          </TouchableOpacity></View>
-       
 
-       <TouchableOpacity
-  style={[styles.button, loading && styles.buttonDisabled]}
-  onPress={loading ? null : handleLogin} // or your handleLogin
-  disabled={loading}
->
-  <Text style={styles.buttonText}>
-    {loading ? "Logging in..." : "Log In"}
-  </Text>
-</TouchableOpacity>
+        <View style={{ marginBottom: 10 }}>
+          <TouchableOpacity onPress={() => router.push('/forgotPassword')}>
+            <Text style={{ color: 'green', textAlign: 'right' }}>Forgot Password?</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={loading ? null : handleLogin}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>
+            {loading ? "Logging in..." : "Log In"}
+          </Text>
+        </TouchableOpacity>
 
         <View style={styles.dividerContainer}>
           <View style={styles.line} />
@@ -134,36 +148,45 @@ const LoginScreen = () => {
           }}
         >
           <TouchableOpacity>
-          <View style={styles.circle}>
-            <Image
-              source={googleLogo}
-              style={{ width: 40, height: 40, resizeMode: "contain" }}
-            />
-          </View>
+            <View style={styles.circle}>
+              <Image
+                source={googleLogo}
+                style={{ width: 40, height: 40, resizeMode: "contain" }}
+              />
+            </View>
           </TouchableOpacity>
           <TouchableOpacity>
-          <View style={styles.circle}>
-            <Image
-              source={facebookLogo}
-              style={{ width: 40, height: 40, resizeMode: "contain" }}
-            />
-          </View>
+            <View style={styles.circle}>
+              <Image
+                source={facebookLogo}
+                style={{ width: 40, height: 40, resizeMode: "contain" }}
+              />
+            </View>
           </TouchableOpacity>
-          
         </View>
-        <View style={{alignItems:'center',justifyContent:'center',marginTop:10, flexDirection:'row'}}>
-            <Text>Don't have an account?</Text> <TouchableOpacity onPress={() => router.push('/signUp')}>
+
+        <View style={{ alignItems: 'center', justifyContent: 'center', marginTop: 10, flexDirection: 'row' }}>
+          <Text>Don't have an account?</Text>
+          <TouchableOpacity onPress={() => router.push('/signUp')}>
             <Text style={{ color: 'green' }}> Sign Up</Text>
           </TouchableOpacity>
-          </View>
+        </View>
 
-        
+        <View style={{ marginBottom: 10 }}>
+          <TouchableOpacity onPress={() => router.push('/homeScreen')}>
+            <Text style={{ color: 'green', textAlign: 'right' }}>home</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={{ marginBottom: 10 }}>
+          <TouchableOpacity onPress={() => router.push('/_messageScreen')}>
+            <Text style={{ color: 'green', textAlign: 'right' }}>messagescreen</Text>
+          </TouchableOpacity>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -221,7 +244,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 16,
-
   },
   errorText: {
     color: "red",
@@ -243,15 +265,14 @@ const styles = StyleSheet.create({
     color: "#555",
   },
   circle: {
-  width: 50,
-  height: 50,
-  borderRadius: 25,
-  borderWidth: 0.5,               
-  borderColor: '#333',     
-  justifyContent: 'center',
-  alignItems: 'center',
-},
-  
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 0.5,
+    borderColor: '#333',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default LoginScreen;

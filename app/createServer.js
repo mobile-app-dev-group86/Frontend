@@ -1,55 +1,67 @@
+import { useRouter } from 'expo-router'; 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View,Button } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View, Button } from 'react-native';
 
 // template items and icons
 const templates = [
-    { id: "1", name: "Gaming", icon: "gamepad-variant" },
-    { id: "2", name: "School Club", icon: "school" },
-    { id: "3", name: "Study Group", icon: "book" },
-    { id: "4", name: "Friends", icon: "contacts" },
-    { id: "5", name: "Artists & Creators", icon: "music" },
-    { id: "6", name: "Local Community", icon: "handshake" },
+  { id: "1", name: "Gaming", icon: "gamepad-variant", route: '/template' },
+  { id: "2", name: "School Club", icon: "school", route: '/template' },
+  { id: "3", name: "Study Group", icon: "book", route: '/template' },
+  { id: "4", name: "Friends", icon: "contacts", route: '/template' },
+  { id: "5", name: "Artists & Creators", icon: "music", route: '/template' },
+  { id: "6", name: "Local Community", icon: "handshake", route: '/template' },
 ];
 
-export default function // able to export the screen anywhere
-    CreateYourServerScreen() {
-    const renderTemplate = ({ item }) => ( //so for every item in the template, style the icon and have its name next to it
-        <TouchableOpacity style={styles.templateItem} >
-            <View style={styles.leftSide}>
-                <MaterialCommunityIcons name={item.icon} size={24} color=" " />
-                <Text style={styles.templateText}>{item.name}</Text>
-            </View>
-            <MaterialCommunityIcons name="chevron-right" size={24} color=" " />
-        </TouchableOpacity>
-    );
+export default function CreateYourServerScreen() {
+  const router = useRouter(); 
 
-    return ( //first half(heading and button)
-        <View style={styles.container}>
-            <Text style={styles.title}>Create Your Server</Text>
-            <Text style={styles.subtitle}>Your server is where you and your friends hang out. Make yours and start talking</Text>
+  const renderTemplate = ({ item }) => (
+    <TouchableOpacity
+      style={styles.templateItem}
+      onPress={() => {
+        if (item.route) {
+          router.push(item.route);
+        } 
+      }}
+    >
+      <View style={styles.leftSide}>
+        <MaterialCommunityIcons name={item.icon} size={24} color=" " />
+        <Text style={styles.templateText}>{item.name}</Text>
+      </View>
+      <MaterialCommunityIcons name="chevron-right" size={24} color=" " />
+    </TouchableOpacity>
+  );
 
-            <TouchableOpacity style={styles.createButton}
-             onPress={() => router.push('/createChannel')}
-            
-            >
-                <MaterialCommunityIcons name="plus-circle" size={20} color="black" />
-                <Text style={styles.createButtonText}>Create My Own  </Text>
-               
-            </TouchableOpacity>
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Create Your Server</Text>
+      <Text style={styles.subtitle}>
+        Your server is where you and your friends hang out. Make yours and start talking
+      </Text>
 
-            <Text style={styles.sectionHeader}>Start from a template</Text>
-            <FlatList data={templates}
-                renderItem={renderTemplate}
-                keyExtractor={(item) => item.id}
-                style={styles.list}
-            />
+      <TouchableOpacity
+        style={styles.createButton}
+        onPress={() => router.push('/createChannel')}
+      >
+        <MaterialCommunityIcons name="plus-circle" size={20} color="#ffffff" />
+        <Text style={styles.createButtonText}>Create My Own</Text>
+      </TouchableOpacity>
 
-            <TouchableOpacity style={styles.joinButton}>
-                <Text style={styles.joinButtonText}> Join a Server</Text>
-            </TouchableOpacity>
-        </View>
-    );
+      <Text style={styles.sectionHeader}>Start from a template</Text>
+      <FlatList
+        data={templates}
+        renderItem={renderTemplate}
+        keyExtractor={(item) => item.id}
+        style={styles.list}
+      />
+
+      <TouchableOpacity style={styles.joinButton}>
+        <Text style={styles.joinButtonText}> Join a Server</Text>
+      </TouchableOpacity>
+    </View>
+  );
 }
+
 
 const styles = StyleSheet.create({
     container: {
@@ -84,7 +96,7 @@ const styles = StyleSheet.create({
 
     createButtonText: {
         fontSize: 16,
-        color: "#000000",
+        color: "#ffffff",
         fontWeight: "bold",
         display:"row"
     },
@@ -114,21 +126,22 @@ const styles = StyleSheet.create({
 
     joinButtonText: {
         fontSize: 16,
-        color: "#000000",
+        color: "#ffffff",
         fontWeight: "bold"
     },
 
     templateItem: {
         flexDirection: "row",
         alignItems: " center",
-        backgroundColor: "d0d0d0",
+        
         padding: 12,
         paddingHorizontal: 10,
         paddingVertical: 14,
+        marginBottom: 5,
         justifyContent: "space-between",
-        borderBottomColor: "#e5e7eb",
-        borderBottomWidth: 1,
-        backgroundColor:"gray",
+        
+        
+        backgroundColor:"#e0e0e0",
         borderRadius: 10,
     },
 

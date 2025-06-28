@@ -19,7 +19,7 @@ import { useRouter } from 'expo-router';
 
 
 // import React from 'react';
-import { View, StyleSheet, SafeAreaView,Text,Image,TouchableOpacity,router } from 'react-native';
+import { View, StyleSheet, SafeAreaView,Text,Image,TouchableOpacity,StatusBar,router } from 'react-native';
 
 export default function homeScreen() {
   const router = useRouter();
@@ -38,19 +38,19 @@ export default function homeScreen() {
                 /></View>
         <TouchableOpacity onPress={() => router.push('/createServer')}>
   <View style={styles.circle}>
-    <FontAwesome6 name="add" size={24} color="#009E60" />
+    <FontAwesome6 name="add" size={24} color="#000000" />
   </View>
 </TouchableOpacity>
 
 <TouchableOpacity onPress={() => router.push('/network')}>
   <View style={styles.circle}>
-    <FontAwesome5 name="network-wired" size={24} color="#009E60" />
+    <FontAwesome5 name="network-wired" size={24} color="#000000" />
   </View>
 </TouchableOpacity>
 
-<TouchableOpacity onPress={() => router.push('/messages')}>
+<TouchableOpacity onPress={() => router.push('/message/')}>
   <View style={styles.circle}>
-    <Feather name="message-circle" size={24} color="#009E60" />
+    <Feather name="message-circle" size={24} color="#000000" />
   </View>
 </TouchableOpacity> </View>
 
@@ -66,9 +66,9 @@ export default function homeScreen() {
                   
                 />
                 <View style={{alignItems: 'center', justifyContent: 'center',}}>
-                <Text style={{fontSize:25,color:'#2C2C2C'}}>Ready For a {'\n'}
-                 next-level group {'\n'}
-                  chat?</Text>
+                <Text style={{fontSize:25,color:'#2C2C2C'}}>
+                  {'Ready For a \nnext-level group \nchat?'}
+                </Text>
                 </View>
                 <TouchableOpacity
                   style={styles.button}
@@ -93,7 +93,7 @@ export default function homeScreen() {
       
 
       
-      
+      <StatusBar barStyle="light-content"/>
     </SafeAreaView>
   );
 }
