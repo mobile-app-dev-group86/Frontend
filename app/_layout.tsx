@@ -29,6 +29,7 @@ export default function RootLayout() {
         <Stack.Screen name="template" options={{ headerShown: false }} />
         <Stack.Screen name="template2" options={{ headerShown: false }} />
         <Stack.Screen name="createServer" options={{ headerShown: false }} />
+        <Stack.Screen name="createChannel" options={{ headerShown: false }} />
         <Stack.Screen name="(modal)" options={{ presentation: 'modal' }} />
         <Stack.Screen name="not-found" options={{ title: 'Oops!' }} />
       </Stack>

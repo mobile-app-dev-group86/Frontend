@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from "react";
+
 import {
   Alert,
   Image,
@@ -47,25 +48,25 @@ const LoginScreen = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://192.168.12.248:8080/api/auth/login", {
+      const response = await fetch("http://10.40.32.226:8080/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
+          username: email,
           password,
         }),
       });
 
-      const text = await response.text();
-      console.log("Raw response:", text);
+      const data = await response.json();
+console.log("Login response:", data);
 
-      if (response.ok) {
-        router.push("/homeScreen");
-      } else {
-        setError(text);
-      }
+if (response.ok) {
+  router.push("/homeScreen");
+} else {
+  setError(data.message || "Login failed");
+}
     } catch (err) {
       console.error("Login error:", err);
       setError("Something went wrong. Try again.");
@@ -179,7 +180,7 @@ const LoginScreen = () => {
         </View>
 
         <View style={{ marginBottom: 10 }}>
-          <TouchableOpacity onPress={() => router.push('/_messageScreen')}>
+          <TouchableOpacity onPress={() => router.push('/messageScreen')}>
             <Text style={{ color: 'green', textAlign: 'right' }}>messagescreen</Text>
           </TouchableOpacity>
         </View>

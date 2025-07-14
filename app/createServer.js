@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router'; 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View, Button } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 // template items and icons
 const templates = [
@@ -34,6 +35,11 @@ export default function CreateYourServerScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.backArrow}>
+        <TouchableOpacity onPress={() => router.back()} >
+          <Ionicons name='arrow-back' size={24} color='black' />
+        </TouchableOpacity>
+      </View>
       <Text style={styles.title}>Create Your Server</Text>
       <Text style={styles.subtitle}>
         Your server is where you and your friends hang out. Make yours and start talking
@@ -69,6 +75,7 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
         paddingHorizontal: 20,
         paddingTop: 40,
+        marginTop: 20,
     },
 
     title: {
@@ -155,4 +162,9 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
     },
+    backArrow: {
+    position: 'absolute',
+    top: 10,
+    left: 20,
+      zIndex: 10,}
 });

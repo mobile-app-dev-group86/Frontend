@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {
   StyleSheet,
   View,
@@ -16,12 +17,18 @@ const CreateChannelScreen = () => {
 
   const handleCreateChannel = () => {
     console.log(`Creating channel: ${channelName} related to ${relatedTo}`);
-    router.back(); // ✅ Should work
+    router.back(); 
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Channel</Text>
+       <View style={styles.backArrow}>
+        <TouchableOpacity onPress={() => router.back()} >
+          <Ionicons name='arrow-back' size={24} color='black' />
+        </TouchableOpacity>
+      </View>
+      <View style={{ marginTop: '10%' }} >
+        <Text style={styles.title}>Create Channel</Text>
 
       <TextInput
         style={styles.input}
@@ -47,6 +54,8 @@ const CreateChannelScreen = () => {
       <TouchableOpacity style={styles.button} onPress={handleCreateChannel}>
         <Text style={styles.buttonText}>Create Channel</Text>
       </TouchableOpacity>
+      </View>
+      
     </View>
   );
 };
@@ -80,7 +89,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   button: {
-    backgroundColor: "#1d7036",
+    backgroundColor: "green",
     paddingVertical: 15,
     borderRadius: 5,
     alignItems: "center",
@@ -90,6 +99,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+   backArrow: {
+    position: 'absolute',
+    top: 10,
+    left: 20,
+      zIndex: 10,}
 });
 
 export default CreateChannelScreen;

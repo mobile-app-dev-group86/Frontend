@@ -19,17 +19,10 @@ const SignUp = () => {
 
   const router = useRouter();
 
-  const isValidEmail = (email) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  };
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isValidPassword = (password) => /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password);
 
-  const isValidPassword = (password) => {
-    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-    return regex.test(password);
-  };
-
-  const mismatch = async () => {
+  const handleSignUp = async () => {
     let valid = true;
 
     if (!isValidEmail(email)) {
@@ -61,40 +54,47 @@ const SignUp = () => {
     if (!valid) return;
 
     try {
-      const response = await fetch("http://192.168.12.248:8080/api/auth/register", {
+      const response = await fetch("http://10.40.32.226:8080/api/auth/register", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           username: userName,
-          email: email,
           password: password,
+          confirmPassword: confirmPassword,
+          email: email,
         }),
       });
 
-      const text = await response.text();
+      const contentType = response.headers.get('content-type');
 
-      try {
-        const data = JSON.parse(text);
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        console.log("JSON Response:", data);
 
         if (response.ok) {
-          console.log('Signup successful:', data);
           alert("Signup successful. Please check your email for a verification code.");
           router.push({
-            pathname: '/verifyCode',
-            params: { email: email },
+            pathname: '/codeVerification',
+            params: { email },
           });
         } else {
-          alert(data.message || "Signup failed");
+          console.warn("Signup failed:", data.message || data.error);
+
+          alert(data.message || data.error || "Signup failed");
+
         }
-      } catch (parseError) {
-        console.error("Server did not return JSON:", text);
-        alert("Unexpected response from server. Please try again later.");
+
+      } else {
+        const rawText = await response.text();
+        console.error("Non-JSON response (likely HTML):\n", rawText);
+        alert("Unexpected server response (possibly redirected to login or access denied). Check backend config.");
       }
+
     } catch (error) {
-      console.error("Error during signup:", error);
-      alert("An error occurred. Please check your network or try again.");
+      console.error(" Network or server error:", error);
+      alert("Network error. Please check your connection or try again.");
     }
   };
 
@@ -183,7 +183,7 @@ const SignUp = () => {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={mismatch}
+        onPress={handleSignUp}
         disabled={!checked}
       >
         <Text style={styles.buttonText}>Sign Up</Text>

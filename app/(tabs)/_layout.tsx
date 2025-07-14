@@ -57,6 +57,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+  name="messageScreen"
+  options={{
+                   
+    tabBarButton: () => null,  
+    tabBarItemStyle: { display: 'none' }    
+  }}
+/>
+
     </Tabs>
   );
 }

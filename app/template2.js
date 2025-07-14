@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    backgroundColor: '#1d7036',
+    backgroundColor: '#F5FFFA',
     borderRadius: 10,
     borderWidth: 1,
     alignItems: 'center',
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   createButton: {
-    backgroundColor: '#1d7036',
+    backgroundColor: 'green',
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
