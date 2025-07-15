@@ -1,42 +1,142 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView ,TouchableOpacity} from "react-native";
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { MaterialIcons, FontAwesome, Ionicons, Feather } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 
-const profileScreen = () => {
+const DiscordProfile = () => {
+  const [profileImage, setProfileImage] = useState('https://i.imgur.com/5b6Q9ZT.jpg');
+  const [note, setNote] = useState('Only visible to you - click to edit');
+  const [isEditingNote, setIsEditingNote] = useState(false);
+  const [tempNote, setTempNote] = useState(note);
+
+  const handleImagePick = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission required', 'We need camera roll permissions to change your profile picture');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  };
+
+  const startNoteEdit = () => {
+    setTempNote(note);
+    setIsEditingNote(true);
+  };
+
+  const saveNote = () => {
+    setNote(tempNote);
+    setIsEditingNote(false);
+  };
+
+  const handleCall = () => {
+    Alert.alert('Call initiated', 'Starting voice call with Anna-Phina');
+  };
+
+  const handleVideoCall = () => {
+    Alert.alert('Video call initiated', 'Starting video call with Anna-Phina');
+  };
+
+  const handleMessage = () => {
+    Alert.alert('Message', 'Opening chat with Anna-Phina');
+  };
+
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.container}
-    >
-      {/* Header Section */}
-      <View style={styles.header}>
-        <Text style={styles.headerText}>My Profile</Text>
-      </View>
-
-      {/* Profile Content - Now with green background */}n
-      <View style={styles.profileSection}>
-        {/* Your existing profile components */}
-        <View style={styles.avatarContainer}>
-          <View style={styles.avatar} />
-          <Text style={styles.username}>Royaldean</Text>
-          <Text style={styles.userInfo}>4398374537 • She/Her</Text>
+    <ScrollView style={styles.container}>
+      <View style={styles.profileCard}>
+        {/* Profile Banner */}
+        <View style={styles.banner} />
+        
+        {/* Profile Header */}
+        <View style={styles.profileHeader}>
+          <TouchableOpacity onPress={handleImagePick} style={styles.avatarContainer}>
+            <Image
+              source={{ uri: profileImage }}
+              style={styles.avatar}
+            />
+            <View style={styles.statusIndicator} />
+            <View style={styles.editBadge}>
+              <MaterialIcons name="edit" size={14} color="white" />
+            </View>
+          </TouchableOpacity>
+          
+          <View style={styles.nameContainer}>
+            <Text style={styles.profileName}>Anna-Phina</Text>
+            <Text style={styles.profileTag}>#62642</Text>
+          </View>
+          
+          <View style={styles.actionsRow}>
+            <TouchableOpacity style={styles.iconButton} onPress={handleMessage}>
+              <MaterialIcons name="message" size={24} color="#b9bbbe" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} onPress={handleCall}>
+              <FontAwesome name="phone" size={24} color="#b9bbbe" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} onPress={handleVideoCall}>
+              <Ionicons name="videocam" size={24} color="#b9bbbe" />
+            </TouchableOpacity>
+          </View>
         </View>
-
-        {/* Status Button */}
-        <TouchableOpacity style={styles.statusButton}>
-          <Text style={styles.statusText}>+ Add Status</Text>
-        </TouchableOpacity>
-
-        {/* Profile Options */}
-        <View style={styles.optionsContainer}>
-          <View style={styles.optionItem}>
-            <Text style={styles.optionText}>Amp up your profile</Text>
+        
+        {/* Divider */}
+        <View style={styles.divider} />
+        
+        {/* Profile Details */}
+        <View style={styles.detailsSection}>
+          <Text style={styles.sectionTitle}>ABOUT ME</Text>
+          <Text style={styles.bioText}>
+            Digital artist | Cat lover | Coffee addict
+          </Text>
+          
+          <View style={styles.detailRow}>
+            <Feather name="calendar" size={18} color="#b9bbbe" />
+            <Text style={styles.detailText}>Member since May 10, 2025</Text>
           </View>
-          <View style={styles.optionItem}>
-            <Text style={styles.optionText}>Get Nitro</Text>
+          
+          <View style={styles.detailRow}>
+            <MaterialIcons name="people" size={18} color="#b9bbbe" />
+            <Text style={styles.detailText}>1 mutual friend</Text>
           </View>
-          <View style={styles.optionItem}>
-            <Text style={styles.optionText}>Shop</Text>
-          </View>
+        </View>
+        
+        {/* Divider */}
+        <View style={styles.divider} />
+        
+        {/* Note Section */}
+        <View style={styles.detailsSection}>
+          <Text style={styles.sectionTitle}>NOTE</Text>
+          {isEditingNote ? (
+            <View>
+              <TextInput
+                style={styles.noteInput}
+                value={tempNote}
+                onChangeText={setTempNote}
+                autoFocus
+                multiline
+              />
+              <View style={styles.noteActions}>
+                <TouchableOpacity onPress={saveNote} style={styles.saveButton}>
+                  <Text style={styles.saveButtonText}>Save</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setIsEditingNote(false)} style={styles.cancelButton}>
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <TouchableOpacity onPress={startNoteEdit}>
+              <Text style={styles.noteText}>{note}</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </ScrollView>
@@ -44,74 +144,54 @@ const profileScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    backgroundColor: "#2e8b57", // Main green background
-  },
-  header: {
-    backgroundColor: "white",
-    padding: 20,
-    alignItems: "center",
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerText: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#2e8b57",
-  },
-  profileSection: {
-    flex: 1,
-    padding: 20,
-  },
-  avatarContainer: {
-    alignItems: "center",
-    marginTop: 20,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "white",
-    marginBottom: 15,
-  },
-  username: {
-    color: "white",
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  userInfo: {
-    color: "white",
-    fontSize: 16,
-    marginTop: 5,
-  },
-  statusButton: {
-    backgroundColor: "white",
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 20,
-    alignSelf: "center",
-  },
-  statusText: {
-    color: "#2e8b57",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  optionsContainer: {
-    marginTop: 30,
-    backgroundColor: "rgba(255,255,255,0.2)",
+  // ... (keep all previous styles from earlier example)
+  editBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#202225',
     borderRadius: 12,
-    padding: 15,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#2f3136',
   },
-  optionItem: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.1)",
-  },
-  optionText: {
-    color: "white",
+  noteInput: {
+    backgroundColor: '#40444b',
+    borderRadius: 8,
+    padding: 12,
+    color: 'white',
     fontSize: 16,
+    minHeight: 80,
+    marginBottom: 8,
+  },
+  noteActions: {
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'flex-end',
+  },
+  saveButton: {
+    backgroundColor: '#5865f2',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 4,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#b9bbbe',
+  },
+  cancelButtonText: {
+    color: '#b9bbbe',
   },
 });
 
-export default profileScreen;
+export default DiscordProfile;
