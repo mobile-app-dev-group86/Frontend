@@ -54,7 +54,7 @@ const SignUp = () => {
     if (!valid) return;
 
     try {
-      const response = await fetch("http://10.40.32.226:8080/api/auth/register", {
+      const response = await fetch("http:/10.132.254.238:8080/api/auth/register", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

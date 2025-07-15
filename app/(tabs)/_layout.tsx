@@ -17,8 +17,10 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
+        
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
+        
         tabBarStyle: Platform.select({
           ios: {
             position: 'absolute',
@@ -40,7 +42,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="index"
+        name="Notifications"
         options={{
           title: 'Notifications',
           tabBarIcon: ({ color }) => (
@@ -49,7 +51,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="profile"
         options={{
           title: 'You',
           tabBarIcon: ({ color }) => (

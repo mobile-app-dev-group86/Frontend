@@ -48,7 +48,7 @@ const LoginScreen = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://10.40.32.226:8080/api/auth/login", {
+      const response = await fetch("http://10.132.254.238:8080/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -182,6 +182,11 @@ if (response.ok) {
         <View style={{ marginBottom: 10 }}>
           <TouchableOpacity onPress={() => router.push('/messageScreen')}>
             <Text style={{ color: 'green', textAlign: 'right' }}>messagescreen</Text>
+          </TouchableOpacity>
+        </View>
+         <View style={{ marginBottom: 10 }}>
+          <TouchableOpacity onPress={() => router.push('/Notifications')}>
+            <Text style={{ color: 'green', textAlign: 'right' }}>notification</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

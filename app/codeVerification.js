@@ -120,7 +120,8 @@ const CodeVerification = () => {
         </View>
 
         <Text style={styles.infoText}>Didn't Receive OTP?</Text>
-        <Text style={styles.resend}>Resend Code</Text>
+        <TouchableOpacity> <Text style={styles.resend}>Resend Code</Text></TouchableOpacity>
+       
 
         <TouchableOpacity style={styles.button} onPress={handleVerify} disabled={loading}>
           <Text style={styles.buttonText}>{loading ? 'Verifying...' : 'Verify'}</Text>
