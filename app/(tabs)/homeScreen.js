@@ -43,7 +43,7 @@ export default function HomeScreen() {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push('/network')}>
+        <TouchableOpacity onPress={() => router.push('/hub')}>
           <View style={styles.iconContainer}>
             <View style={styles.circle}>
               <FontAwesome5 name="network-wired" size={24} color="#000000" />

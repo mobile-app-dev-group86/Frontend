@@ -106,7 +106,7 @@ export default function MessageScreen() {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push('/network')}>
+        <TouchableOpacity onPress={() => router.push('/hub')}>
           <View style={styles.iconContainer}>
             <View style={styles.circle}>
               <FontAwesome5 name="network-wired" size={24} color="#000000" />
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   header: {
-    marginBottom: 10,
+    marginTop: 15,
   },
   headerTitle: {
     fontSize: 24,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f1f1f1',
-    borderRadius: 10,
+    borderRadius: 15,
     paddingHorizontal: 10,
     paddingVertical: 6,
     marginBottom: 10,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   addButton: {
-    backgroundColor: '#5865F2',
+    backgroundColor: 'green',
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 20,

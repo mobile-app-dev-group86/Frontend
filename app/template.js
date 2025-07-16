@@ -22,7 +22,7 @@ const templateScreen = () => {
       <View style={{ marginTop: 90 }}>
         <Text style={styles.title}>
           Tell Us More About Your Server
-        </Text>
+        </Text>e
 
         <Text style={styles.subTitle}>
           In order to help you with your setup, is your
