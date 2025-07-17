@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 
 const NotificationsScreen = () => {
+  const router = useRouter();
+
   const [notifications, setNotifications] = useState([
     {
       id: '1',
@@ -54,13 +57,25 @@ const NotificationsScreen = () => {
     switch (notification.type) {
       case 'mention':
       case 'reaction':
-        console.log(`Go to channel ${notification.channelId}`);
+        // Navigate to group chat with channelId
+        if (notification.channelId) {
+          router.push({
+            pathname: '/groupchat',
+            params: { channelId: notification.channelId },
+          });
+        }
         break;
       case 'friend_request':
-        console.log('Go to profile');
+        // Navigate to private chat with username
+        if (notification.user?.username) {
+          router.push({
+            pathname: '/privatechat',
+            params: { username: notification.user.username },
+          });
+        }
         break;
       default:
-        console.log('Notification clicked');
+        console.log('Notification clicked:', notification);
     }
   };
 
@@ -156,7 +171,9 @@ const NotificationsScreen = () => {
       ) : (
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>No notifications</Text>
-          <Text style={styles.emptyText}>When you get notifications, they’ll show up here.</Text>
+          <Text style={styles.emptyText}>
+            When you get notifications, they’ll show up here.
+          </Text>
         </View>
       )}
     </View>

@@ -31,6 +31,14 @@ export default function RootLayout() {
         <Stack.Screen name="createServer" options={{ headerShown: false }} />
         <Stack.Screen name="createChannel" options={{ headerShown: false }} />
         <Stack.Screen name="hub" options={{ headerShown: false }} />
+        <Stack.Screen name="Token" options={{ headerShown: false }} />
+        <Stack.Screen name="friendsScreen" options={{ headerShown: false }} />
+        <Stack.Screen name="addFriends" options={{ headerShown: false }} />
+        <Stack.Screen name="privatechat" options={{ headerShown: false }} />
+        <Stack.Screen name="groupchat" options={{ headerShown: false }} />
+        <Stack.Screen name="sendfriendrequest" options={{ headerShown: false }} />
+        <Stack.Screen name="settings" options={{ headerShown: false }} />
+        <Stack.Screen name="Account" options={{ headerShown: false }} />
         <Stack.Screen name="(modal)" options={{ presentation: 'modal' }} />
         <Stack.Screen name="not-found" options={{ title: 'Oops!' }} />
       </Stack>

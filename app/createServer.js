@@ -5,12 +5,12 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 
 const templates = [
-  { id: "1", name: "Gaming", icon: "gamepad-variant", route: null },
-  { id: "2", name: "School Club", icon: "school", route: null },
-  { id: "3", name: "Study Group", icon: "book", route: null },
-  { id: "4", name: "Friends", icon: "contacts", route: null },
-  { id: "5", name: "Artists & Creators", icon: "music", route: null },
-  { id: "6", name: "Local Community", icon: "handshake", route: null },
+  { id: "1", name: "Gaming", icon: "gamepad-variant", route: "/template" },
+  { id: "2", name: "School Club", icon: "school", route: "/template" },
+  { id: "3", name: "Study Group", icon: "book", route:"/template" },
+  { id: "4", name: "Friends", icon: "contacts", route:"/template" },
+  { id: "5", name: "Artists & Creators", icon: "music", route: "/template" },
+  { id: "6", name: "Local Community", icon: "handshake", route: "/template" },
 ];
 
 export default function CreateYourServerScreen() {

@@ -2,7 +2,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import facebookLogo from '../assets/images/facebook.png';
+import instagram from '../assets/images/instagram.png';
 import googleLogo from '../assets/images/google.png';
 
 const SignUp = () => {
@@ -203,7 +203,7 @@ const SignUp = () => {
         </TouchableOpacity>
         <TouchableOpacity>
           <View style={styles.circle}>
-            <Image source={facebookLogo} style={{ width: 40, height: 40, resizeMode: 'contain' }} />
+            <Image source={instagram} style={{ width: 40, height: 40, resizeMode: 'contain' }} />
           </View>
         </TouchableOpacity>
       </View>

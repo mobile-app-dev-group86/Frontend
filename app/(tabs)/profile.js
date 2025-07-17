@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'expo-router';
 import {
   View,
   Text,
@@ -12,7 +13,6 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons, Feather, AntDesign } from '@expo/vector-icons';
 
-// Simulated user data
 const userData = {
   username: 'user-name',
   joinedDate: 'May 10, 2025',
@@ -29,6 +29,7 @@ const DiscordProfile = () => {
   const [status, setStatus] = useState(STATUS_OPTIONS[0]);
   const [modalVisible, setModalVisible] = useState(false);
   const [imageUri, setImageUri] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     (async () => {
@@ -59,8 +60,15 @@ const DiscordProfile = () => {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Top banner */}
-      <View style={styles.banner} />
+      
+      <View style={styles.banner}>
+        <TouchableOpacity
+          style={styles.settingsIcon}
+          onPress={() => router.push('/settings')}
+        >
+          <Feather name="settings" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
 
       {/* Profile info */}
       <View style={styles.profileSection}>
@@ -85,12 +93,10 @@ const DiscordProfile = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Username under profile */}
       <View style={styles.nameSection}>
         <Text style={styles.profileName}>{userData.username}</Text>
       </View>
 
-      {/* Edit Profile Button */}
       <TouchableOpacity style={styles.editButton}>
         <Text style={styles.editText}>Edit Profile</Text>
       </TouchableOpacity>
@@ -123,23 +129,33 @@ const DiscordProfile = () => {
         </View>
       </Modal>
 
-      
       <View style={styles.card}>
         <View style={styles.detailRow}>
-          <Feather name="calendar" size={18} color="" />
+          <Feather name="calendar" size={18} color="black" />
           <Text style={styles.detailText}>Member since {userData.joinedDate}</Text>
         </View>
       </View>
 
-      
       <View style={styles.card}>
         <View style={styles.friendsRow}>
           <View style={styles.detailRow}>
-            <MaterialIcons name="people" size={18} color="" />
-            <Text style={[styles.detailText, { color: '' }]}>Friends</Text>
+            <MaterialIcons name="people" size={18} color="black" />
+            <Text style={styles.detailText}>Friends</Text>
           </View>
-          <TouchableOpacity onPress={() => console.log('Navigate to Friends screen')}>
-            <AntDesign name="right" size={18} color="" />
+          <TouchableOpacity onPress={() => router.push('/friendsScreen')}>
+            <AntDesign name="right" size={18} color="black" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.card}>
+        <View style={styles.friendsRow}>
+          <View style={styles.detailRow}>
+            <MaterialIcons name="money" size={18} color="gold" />
+            <Text style={styles.detailText}>Tokens</Text>
+          </View>
+          <TouchableOpacity onPress={() => router.push('/Token')}>
+            <AntDesign name="right" size={18} color="black" />
           </TouchableOpacity>
         </View>
       </View>
@@ -157,6 +173,15 @@ const styles = StyleSheet.create({
   banner: {
     height: 130,
     backgroundColor: '#B0E0E6',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+    paddingTop: 20,
+    paddingRight: 16,
+  },
+  settingsIcon: {
+    padding: 4,
+    backgroundColor: 'white',
+    borderRadius: 20,
   },
   profileSection: {
     flexDirection: 'row',

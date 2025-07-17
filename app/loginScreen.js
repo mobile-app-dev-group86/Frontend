@@ -14,7 +14,7 @@ import {
   View,
   ScrollView,
 } from "react-native";
-import facebookLogo from "../assets/images/facebook.png";
+import instagram from "../assets/images/instagram.png";
 import googleLogo from "../assets/images/google.png";
 
 const LoginScreen = () => {
@@ -159,7 +159,7 @@ if (response.ok) {
           <TouchableOpacity>
             <View style={styles.circle}>
               <Image
-                source={facebookLogo}
+                source={instagram}
                 style={{ width: 40, height: 40, resizeMode: "contain" }}
               />
             </View>
@@ -173,20 +173,23 @@ if (response.ok) {
           </TouchableOpacity>
         </View>
 
+        
+        
         <View style={{ marginBottom: 10 }}>
           <TouchableOpacity onPress={() => router.push('/homeScreen')}>
             <Text style={{ color: 'green', textAlign: 'right' }}>home</Text>
           </TouchableOpacity>
-        </View>
+          </View>
+        
 
         <View style={{ marginBottom: 10 }}>
-          <TouchableOpacity onPress={() => router.push('/messageScreen')}>
-            <Text style={{ color: 'green', textAlign: 'right' }}>messagescreen</Text>
+          <TouchableOpacity onPress={() => router.push('/privatechat')}>
+            <Text style={{ color: 'green', textAlign: 'right' }}>privatechat</Text>
           </TouchableOpacity>
         </View>
          <View style={{ marginBottom: 10 }}>
-          <TouchableOpacity onPress={() => router.push('/Notifications')}>
-            <Text style={{ color: 'green', textAlign: 'right' }}>notification</Text>
+          <TouchableOpacity onPress={() => router.push('/groupchat')}>
+            <Text style={{ color: 'green', textAlign: 'right' }}>groupchat</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
