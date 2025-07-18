@@ -39,6 +39,10 @@ export default function RootLayout() {
         <Stack.Screen name="sendfriendrequest" options={{ headerShown: false }} />
         <Stack.Screen name="settings" options={{ headerShown: false }} />
         <Stack.Screen name="Account" options={{ headerShown: false }} />
+        <Stack.Screen name="serverDetails" options={{ headerShown: false }} />
+        <Stack.Screen name="CalendarScreen" options={{ headerShown: false }} />
+        <Stack.Screen name="search" options={{ headerShown: false }} />
+        <Stack.Screen name="inviteFriend" options={{ headerShown: false }} />
         <Stack.Screen name="(modal)" options={{ presentation: 'modal' }} />
         <Stack.Screen name="not-found" options={{ title: 'Oops!' }} />
       </Stack>

@@ -1,109 +1,171 @@
 import React, { useState } from "react";
-import Ionicons from '@expo/vector-icons/Ionicons';
 import {
-  StyleSheet,
   View,
-  TouchableOpacity,
   Text,
   TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
-const CreateChannelScreen = () => {
-  const router = useRouter(); // ✅ should work in app/ directory screen
+export default function CreateChannelScreen() {
+  const router = useRouter();
+  const { serverId } = useLocalSearchParams(); // 👈 make sure this is passed from previous screen
   const [channelName, setChannelName] = useState("");
-  const [relatedTo, setRelatedTo] = useState("general");
+  const [channelType, setChannelType] = useState("text"); // text or voice
+  const [loading, setLoading] = useState(false);
 
-  const handleCreateChannel = () => {
-    console.log(`Creating channel: ${channelName} related to ${relatedTo}`);
-    router.back(); 
+  const handleCreateChannel = async () => {
+    if (!channelName.trim()) {
+      Alert.alert("Error", "Channel name is required");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch("https://your-backend-url/api/channels", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: channelName.trim(),
+          relatedTo: channelType,
+          serverId: serverId, // 👈 links to server
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Something went wrong");
+      }
+
+      Alert.alert("Success", "Channel created successfully");
+      router.back();
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-       <View style={styles.backArrow}>
-        <TouchableOpacity onPress={() => router.back()} >
-          <Ionicons name='arrow-back' size={24} color='black' />
-        </TouchableOpacity>
-      </View>
-      <View style={{ marginTop: '10%' }} >
-        <Text style={styles.title}>Create Channel</Text>
+      <Text style={styles.heading}>Create a Channel</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Channel Name"
+        placeholder="Enter channel name"
         value={channelName}
         onChangeText={setChannelName}
       />
 
-      <Text style={styles.label}>Related To:</Text>
+      <View style={styles.typeContainer}>
+        <TouchableOpacity
+          style={[
+            styles.typeButton,
+            channelType === "text" && styles.activeType,
+          ]}
+          onPress={() => setChannelType("text")}
+        >
+          <Text
+            style={[
+              styles.typeText,
+              channelType === "text" && styles.activeTypeText,
+            ]}
+          >
+            Text
+          </Text>
+        </TouchableOpacity>
 
-      <Picker
-        selectedValue={relatedTo}
-        onValueChange={(itemValue) => setRelatedTo(itemValue)}
-        style={styles.picker}
-      >
-        <Picker.Item label="General" value="general" />
-        <Picker.Item label="Announcements" value="announcements" />
-        <Picker.Item label="Events" value="events" />
-        <Picker.Item label="Gaming" value="gaming" />
-        <Picker.Item label="Voice Chat" value="voice_chat" />
-      </Picker>
-
-      <TouchableOpacity style={styles.button} onPress={handleCreateChannel}>
-        <Text style={styles.buttonText}>Create Channel</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.typeButton,
+            channelType === "voice" && styles.activeType,
+          ]}
+          onPress={() => setChannelType("voice")}
+        >
+          <Text
+            style={[
+              styles.typeText,
+              channelType === "voice" && styles.activeTypeText,
+            ]}
+          >
+            Voice
+          </Text>
+        </TouchableOpacity>
       </View>
-      
+
+      <TouchableOpacity
+        style={styles.createButton}
+        onPress={handleCreateChannel}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text style={styles.buttonText}>Create Channel</Text>
+        )}
+      </TouchableOpacity>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#fff",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
+  heading: {
+    fontSize: 22,
+    fontWeight: "600",
     marginBottom: 20,
   },
   input: {
-    height: 40,
-    borderColor: "#ccc",
+    height: 48,
     borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    paddingHorizontal: 12,
     marginBottom: 20,
   },
-  label: {
-    fontSize: 16,
-    marginBottom: 10,
-    fontWeight: "bold",
+  typeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 20,
   },
-  picker: {
-    height: 50,
-    width: "100%",
+  typeButton: {
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    width: "40%",
+    alignItems: "center",
   },
-  button: {
-    backgroundColor: "green",
-    paddingVertical: 15,
-    borderRadius: 5,
+  activeType: {
+    backgroundColor: "#4CAF50",
+    borderColor: "#4CAF50",
+  },
+  typeText: {
+    color: "#555",
+    fontWeight: "500",
+  },
+  activeTypeText: {
+    color: "#fff",
+  },
+  createButton: {
+    backgroundColor: "#4CAF50",
+    paddingVertical: 14,
+    borderRadius: 8,
     alignItems: "center",
   },
   buttonText: {
-    color: "#fff",
+    color: "white",
+    fontWeight: "600",
     fontSize: 16,
-    fontWeight: "bold",
   },
-   backArrow: {
-    position: 'absolute',
-    top: 10,
-    left: 20,
-      zIndex: 10,}
 });
-
-export default CreateChannelScreen;

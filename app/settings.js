@@ -8,84 +8,98 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { AntDesign, Feather } from "@expo/vector-icons";
-
-const settingsData = [
-  {
-    key: "1",
-    label: "My Account",
-    onPress: (router) => router.push("/Account"),
-  },
-  {
-    key: "2",
-    label: "Devices",
-    onPress: (router) => router.push("/settings/devices"),
-  },
-  {
-    key: "3",
-    label: "Appearance",
-    onPress: (router) => router.push("/settings/appearance"),
-  },
-  {
-    key: "4",
-    label: "Channel settings screen",
-    onPress: (router) => router.push("/settings/channelSettings"),
-  },
-  {
-    key: "5",
-    label: "Privacy and safety",
-    onPress: (router) => router.push("/settings/privacySafety"),
-  },
-  {
-    key: "6",
-    label: "Connections",
-    onPress: (router) => router.push("/settings/connections"),
-  },
-  {
-    key: "7",
-    label: "Accessibility",
-    onPress: (router) => router.push("/settings/accessibility"),
-  },
-  {
-    key: "8",
-    label: "Authorized Apps",
-    onPress: (router) => router.push("/settings/authorizedApps"),
-  },
-  {
-    key: "9",
-    label: "Activity feed",
-    onPress: (router) => router.push("/settings/activityFeed"),
-  },
-  {
-    key: "10",
-    label: "Server settings",
-    onPress: (router) => router.push("/settings/serverSettings"),
-  },
-  {
-    key: "11",
-    label: "Log Out",
-    isLogout: true,
-    onPress: (router) => alert("Logged out!"),
-  },
-];
 
 export default function SettingsScreen() {
   const router = useRouter();
   const [searchText, setSearchText] = useState("");
 
+  const handleLogout = () => {
+    Alert.alert(
+      "Log Out",
+      "Are you sure you want to log out?",
+      [
+        {
+          text: "No",
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          onPress: () => {
+            router.replace("/login"); // Replace with your actual login route
+          },
+          style: "destructive",
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const settingsData = [
+    {
+      key: "1",
+      label: "My Account",
+      onPress: () => router.push("/Account"),
+    },
+    {
+      key: "2",
+      label: "Devices",
+      onPress: () => router.push("/settings/devices"),
+    },
+    {
+      key: "3",
+      label: "Appearance",
+      onPress: () => router.push("/settings/appearance"),
+    },
+    {
+      key: "4",
+      label: "Channel settings screen",
+      onPress: () => router.push("/settings/channelSettings"),
+    },
+    {
+      key: "5",
+      label: "Privacy and safety",
+      onPress: () => router.push("/settings/privacySafety"),
+    },
+    {
+      key: "6",
+      label: "Connections",
+      onPress: () => router.push("/settings/connections"),
+    },
+    {
+      key: "7",
+      label: "Accessibility",
+      onPress: () => router.push("/settings/accessibility"),
+    },
+    {
+      key: "8",
+      label: "Authorized Apps",
+      onPress: () => router.push("/settings/authorizedApps"),
+    },
+    {
+      key: "9",
+      label: "Activity feed",
+      onPress: () => router.push("/settings/activityFeed"),
+    },
+    {
+      key: "10",
+      label: "Server settings",
+      onPress: () => router.push("/settings/serverSettings"),
+    },
+    {
+      key: "11",
+      label: "Log Out",
+      isLogout: true,
+      onPress: handleLogout,
+    },
+  ];
+
   const filteredSettings = settingsData.filter((item) =>
     item.label.toLowerCase().includes(searchText.toLowerCase())
   );
-
-  const handlePress = (item) => {
-    if (item.onPress) {
-      item.onPress(router);
-    } else {
-      console.log("No onPress defined");
-    }
-  };
 
   const renderSetting = ({ item }) => (
     <TouchableOpacity
@@ -96,7 +110,7 @@ export default function SettingsScreen() {
           backgroundColor: "#fff5f5",
         },
       ]}
-      onPress={() => handlePress(item)}
+      onPress={item.onPress}
     >
       <Text
         style={[
@@ -119,7 +133,6 @@ export default function SettingsScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <AntDesign name="arrowleft" size={24} color="black" />
@@ -128,7 +141,6 @@ export default function SettingsScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      {/* Search bar */}
       <View style={styles.searchContainer}>
         <Feather name="search" size={20} color="gray" style={styles.searchIcon} />
         <TextInput
@@ -140,7 +152,6 @@ export default function SettingsScreen() {
         />
       </View>
 
-      {/* Settings list */}
       <FlatList
         data={filteredSettings}
         keyExtractor={(item) => item.key}

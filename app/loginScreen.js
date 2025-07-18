@@ -192,6 +192,11 @@ if (response.ok) {
             <Text style={{ color: 'green', textAlign: 'right' }}>groupchat</Text>
           </TouchableOpacity>
         </View>
+        <View style={{ marginBottom: 10 }}>
+          <TouchableOpacity onPress={() => router.push('/serverDetails')}>
+            <Text style={{ color: 'green', textAlign: 'right' }}>serverdetails</Text>
+          </TouchableOpacity>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

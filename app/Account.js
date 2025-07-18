@@ -1,46 +1,15 @@
-import React, { useState } from "react"; // Import useState
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
+  Image,
 } from "react-native";
-import { AntDesign } from "@expo/vector-icons"; // Assuming you are using Expo for icons
+import { AntDesign } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useRouter } from "expo-router";
 
-// --- Define your 'SecurityScreen' and 'StandingScreen' components here ---
-// These will be the content displayed when a tab is active.
-const SecurityScreenContent = () => (
-  <View style={styles.contentContainer}>
-    <Text style={styles.contentText}>Security settings go here!</Text>
-    {/* Add your Security-specific UI elements */}
-    <View style={styles.addEmailContainer}>
-      <Text style={styles.addEmailText}>Add an email to your account</Text>
-      <TouchableOpacity style={styles.addEmailButton}>
-        <Text style={styles.addEmailButtonText}>Add Email</Text>
-      </TouchableOpacity>
-    </View>
-
-    <Text style={styles.sectionTitle}>Account Information</Text>
-    <View style={styles.accountInfoContainer}>
-      <AccountInfoRow label="Username" value="3541043637" />
-      <AccountInfoRow label="Display Name" value="Dean" />
-      <AccountInfoRow label="Email" value="" showArrow={true} />
-      <AccountInfoRow label="Phone" value="+23356783468" />
-    </View>
-
-    <Text style={styles.signInText}>How you sign into your account</Text>
-  </View>
-);
-
-const StandingScreenContent = () => (
-  <View style={styles.standingcontentContainer}>
-    <View style={styles.circle}></View>
-    <Text style={styles.contentText}>Your account is all good</Text>
-  </View>
-);
-
-// --- Your existing AccountInfoRow component ---
 const AccountInfoRow = ({ label, value, showArrow = true }) => (
   <TouchableOpacity style={styles.accountInfoRow}>
     <Text style={styles.accountInfoLabel}>{label}</Text>
@@ -52,77 +21,131 @@ const AccountInfoRow = ({ label, value, showArrow = true }) => (
 );
 
 const AccountScreen = () => {
-  // Use useState to manage the active tab
-  const [activeTab, setActiveTab] = useState("security"); // 'security' or 'standing'
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState("security");
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [profilePicture, setProfilePicture] = useState("");
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch("http://your-backend-url.com/api/user/profile");
+        const data = await response.json();
+        setDisplayName(data.displayName);
+        setEmail(data.email);
+        setProfilePicture(data.profilePicture); // Must be a valid image URL
+      } catch (error) {
+        console.error("Failed to load user info:", error);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+
+  const SecurityScreenContent = () => (
+    <View style={styles.contentContainer}>
+      
+
+      <Text style={styles.sectionTitle}>Account Information</Text>
+      <View style={styles.accountInfoContainer}>
+        <AccountInfoRow label="Display Name" value={displayName} showArrow={false} />
+        <AccountInfoRow label="Email" value={email} showArrow={false} />
+      </View>
+
+      <Text style={styles.signInText}>How you sign into your account</Text>
+    </View>
+  );
+
+  const StandingScreenContent = () => (
+    <View style={styles.standingcontentContainer}>
+      {profilePicture ? (
+        <Image source={{ uri: profilePicture }} style={styles.profileCircle} />
+      ) : (
+        <View style={styles.profileCirclePlaceholder}></View>
+      )}
+
+      <Text style={styles.goodText}>Your account is all good</Text>
+
+      <Text style={styles.infoText}>
+        Thanks for upholding Chatterly's{" "}
+        <TouchableOpacity onPress={() => console.log("Terms of Service pressed")}>
+          <Text style={styles.link}>Terms of Service</Text>
+        </TouchableOpacity>{" "}
+        and{" "}
+        <TouchableOpacity onPress={() => console.log("Community Guidelines pressed")}>
+          <Text style={styles.link}>Community Guidelines</Text>
+        </TouchableOpacity>.
+      </Text>
+
+      <Text style={styles.infoText}>
+        If you break the rules it will show up here.
+      </Text>
+    </View>
+  );
 
   const renderContent = () => {
-    if (activeTab === "security") {
-      return <SecurityScreenContent />;
-    } else if (activeTab === "standing") {
-      return <StandingScreenContent />;
-    }
-    return null; // Should not happen
+    if (activeTab === "security") return <SecurityScreenContent />;
+    if (activeTab === "standing") return <StandingScreenContent />;
+    return null;
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Header with back arrow */}
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#000" />
+        </TouchableOpacity>
         <Text style={styles.headerText}>Account</Text>
       </View>
 
-      {/* Security and Standing Tabs */}
+      {/* Tabs */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
-          style={[
-            styles.tabButton,
-            activeTab === "security" && styles.activeTab,
-          ]}
+          style={[styles.tabButton, activeTab === "security" && styles.activeTab]}
           onPress={() => setActiveTab("security")}
         >
-          <Text
-            style={
-              activeTab === "security" ? styles.activeTabText : styles.tabText
-            }
-          >
+          <Text style={activeTab === "security" ? styles.activeTabText : styles.tabText}>
             Security
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            styles.tabButton,
-            activeTab === "standing" && styles.activeTab,
-          ]}
+          style={[styles.tabButton, activeTab === "standing" && styles.activeTab]}
           onPress={() => setActiveTab("standing")}
         >
-          <Text
-            style={
-              activeTab === "standing" ? styles.activeTabText : styles.tabText
-            }
-          >
+          <Text style={activeTab === "standing" ? styles.activeTabText : styles.tabText}>
             Standing
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Conditionally render content based on activeTab */}
+      {/* Content */}
       {renderContent()}
     </View>
   );
 };
 
-// --- Your existing styles, with additions for new content containers ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff", // Red background for the main container
-    paddingTop: 50, // Adjust for status bar
+    backgroundColor: "#fff",
+    paddingTop: 50,
   },
   header: {
     backgroundColor: "#fff",
     paddingVertical: 15,
     alignItems: "center",
+    justifyContent: "center",
     marginBottom: 10,
+    position: "relative",
+  },
+  backButton: {
+    position: "absolute",
+    left: 15,
+    top: 12,
+    padding: 5,
+    zIndex: 1,
   },
   headerText: {
     fontSize: 20,
@@ -131,11 +154,10 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: "row",
-    backgroundColor: "#90EE90", // Light grey background for the tab area
+    backgroundColor: "green",
     marginHorizontal: 20,
     borderRadius: 25,
     padding: 3,
-    marginBottom: 20,
   },
   tabButton: {
     flex: 1,
@@ -144,39 +166,60 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   activeTab: {
-    backgroundColor: "#fff", 
+    backgroundColor: "#fff",
   },
   tabText: {
     fontSize: 16,
-    color: "#666",
+    color: "#000000",
   },
   activeTabText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
+    color: "#000000",
   },
-  addEmailContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  contentContainer: {
+    flex: 1,
+    paddingHorizontal: 0,
+  },
+  standingcontentContainer: {
+    marginTop: "40%",
+    paddingHorizontal: 20,
+    justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 20,
+    
   },
-  addEmailText: {
-    fontSize: 16,
+  profileCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 10,
+    borderWidth: 2,
+    borderColor: "black",
+  },
+  profileCirclePlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 10,
+    borderWidth: 2,
+    borderColor: "black",
+    backgroundColor: "#ccc",
+  },
+  goodText: {
+    fontSize: 18,
+    fontWeight: "bold",
     color: "#333",
+    textAlign: "center",
+    marginBottom: 10,
   },
-  addEmailButton: {
-    backgroundColor: "#8aff5a", // Green button
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 20,
+  infoText: {
+    fontSize: 14,
+    color: "#555",
+    textAlign: "center",
+    marginBottom: 5,
   },
-  addEmailButtonText: {
-    color: "#333",
+  link: {
+    color: "green",
     fontWeight: "bold",
   },
   sectionTitle: {
@@ -185,12 +228,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginHorizontal: 20,
     marginBottom: 10,
+    marginTop: 20,
   },
   accountInfoContainer: {
     backgroundColor: "#fff",
     marginHorizontal: 20,
     borderRadius: 10,
-    overflow: "hidden", // Ensures borders are contained
+    overflow: "hidden",
   },
   accountInfoRow: {
     flexDirection: "row",
@@ -198,8 +242,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 15,
     paddingHorizontal: 15,
-    borderBottomWidth: StyleSheet.hairlineWidth, // Thin line
-    borderBottomColor: "#e0e0e0", // Light grey for separators
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#000000",
   },
   accountInfoLabel: {
     fontSize: 16,
@@ -216,37 +260,10 @@ const styles = StyleSheet.create({
   },
   signInText: {
     fontSize: 14,
-    color: "black", // Light grey for section title
+    color: "black",
     marginHorizontal: 20,
     fontWeight: "bold",
     marginTop: 20,
-  },
-  // New styles for content containers
-  contentContainer: {
-    flex: 1, // Allow content to take up remaining space
-    paddingHorizontal: 0, // Padding handled by internal components
-  },
-  standingcontentContainer: {
-    flex: 1, // Allow content to take up remaining space
-    paddingHorizontal: 0, // Padding handled by internal components
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  contentText: {
-    fontSize: 18,
-    color: "#555",
-    textAlign: "center",
-    marginVertical: 20,
-  },
-  circle: {
-    width: 100, // Diameter of the circle
-    height: 100, // Diameter of the circle
-    borderRadius: 50, // Half of width/height makes it a circle
-    justifyContent: "center", // Center content vertically inside the circle
-    alignItems: "center", // Center content horizontally inside the circle
-    marginBottom: 10, // Space between circle and text
-    borderWidth: 2,
-    borderColor: "black",
   },
 });
 

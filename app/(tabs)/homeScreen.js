@@ -1,5 +1,5 @@
 import { useRouter, usePathname } from 'expo-router';
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,88 +8,139 @@ import {
   Image,
   TouchableOpacity,
   StatusBar,
+  FlatList,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Feather from '@expo/vector-icons/Feather';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import Ionicons from '@expo/vector-icons/Ionicons';
 
 import homeimage from '../../assets/images/homeimage.png';
 import gamepad from '../../assets/images/gamepad.jpg';
+
+import ServerDetailsScreen from '../serverDetails';
+
+const getRandomColor = () => {
+  const colors = ['#FF8A80', '#FFD180', '#A7FFEB', '#80D8FF', '#B388FF', '#F48FB1'];
+  return colors[Math.floor(Math.random() * colors.length)];
+};
 
 export default function HomeScreen() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const [servers, setServers] = useState([]);
+  const [selectedServer, setSelectedServer] = useState(null);
+
+  const fetchServers = async () => {
+    try {
+      const response = await fetch('http://YOUR_BACKEND_URL/api/servers'); // Replace with your real URL
+      const data = await response.json();
+      setServers(data);
+    } catch (error) {
+      console.error('Error fetching servers:', error);
+    }
+  };
+
+  // Refresh servers when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      fetchServers();
+    }, [])
+  );
+
+  const handleServerPress = (server) => {
+    setSelectedServer(server);
+  };
+
+  const renderServerCircle = ({ item }) => (
+    <TouchableOpacity
+      style={styles.serverCircleWrapper}
+      onPress={() => handleServerPress(item)}
+    >
+      <View style={[styles.serverCircle, { backgroundColor: getRandomColor() }]}>
+        {item.image ? (
+          <Image source={{ uri: item.image }} style={styles.serverImage} />
+        ) : (
+          <Text style={styles.serverInitial}>{item.name.charAt(0).toUpperCase()}</Text>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Sidebar */}
       <View style={styles.sidebar}>
-        <View style={styles.circle1}>
-          <Image
-            source={gamepad}
-            style={{ width: 50, height: 50, borderRadius: 25 }}
-            resizeMode="cover"
-          />
+        {/* Fixed Top: Logo + Icons */}
+        <View style={styles.fixedTop}>
+          <View style={styles.circle1}>
+            <Image source={gamepad} style={{ width: 50, height: 50, borderRadius: 25 }} />
+          </View>
+
+          <TouchableOpacity onPress={() => router.push('/createServer')}>
+            <View style={styles.iconContainer}>
+              <View style={styles.circle}>
+                <FontAwesome6 name="add" size={24} color="#000000" />
+              </View>
+              {pathname === '/createServer' && <View style={styles.activeLine} />}
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.push('/hub')}>
+            <View style={styles.iconContainer}>
+              <View style={styles.circle}>
+                <FontAwesome5 name="network-wired" size={24} color="#000000" />
+              </View>
+              {pathname === '/hub' && <View style={styles.activeLine} />}
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.push('/messageScreen')}>
+            <View style={styles.iconContainer}>
+              <View style={styles.circle}>
+                <Feather name="message-circle" size={24} color="#000000" />
+              </View>
+              {pathname === '/messageScreen' && <View style={styles.activeLine} />}
+            </View>
+          </TouchableOpacity>
+
+          {/* Divider */}
+          <View style={styles.divider} />
         </View>
 
-        <TouchableOpacity onPress={() => router.push('/createServer')}>
-          <View style={styles.iconContainer}>
-            <View style={styles.circle}>
-              <FontAwesome6 name="add" size={24} color="#000000" />
-            </View>
-            {pathname === '/createServer' && <View style={styles.activeLine} />}
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => router.push('/hub')}>
-          <View style={styles.iconContainer}>
-            <View style={styles.circle}>
-              <FontAwesome5 name="network-wired" size={24} color="#000000" />
-            </View>
-            {pathname === '/network' && <View style={styles.activeLine} />}
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => router.push('/messageScreen')}>
-          <View style={styles.iconContainer}>
-            <View style={styles.circle}>
-              <Feather name="message-circle" size={24} color="#000000" />
-            </View>
-            {pathname === '/messageScreen' && <View style={styles.activeLine} />}
-          </View>
-        </TouchableOpacity>
+        {/* Scrollable Server List */}
+        <FlatList
+          data={servers}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderServerCircle}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+          style={styles.scrollArea}
+        />
       </View>
 
-      {/* Main Area */}
+      {/* Main Content */}
       <View style={styles.mainArea}>
-        <Text style={{ fontSize: 40 }}>Servers</Text>
-
-        <Image
-          source={homeimage}
-          style={{
-            width: 200,
-            height: 200,
-            marginTop: 20,
-            marginLeft: 20,
-            paddingLeft: 10,
-          }}
-        />
-
-        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ fontSize: 25, color: '#2C2C2C', textAlign: 'center' }}>
-            {'Ready For a \nnext-level group \nchat?'}
-          </Text>
-        </View>
-
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Join a server</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.button1}>
-          <Text style={styles.buttonText1}>Create a server</Text>
-        </TouchableOpacity>
+        {selectedServer ? (
+          <ServerDetailsScreen serverId={selectedServer.id} />
+        ) : (
+          <>
+            <Text style={{ fontSize: 40 }}>Servers</Text>
+            <Image source={homeimage} style={{ width: 200, height: 200, marginTop: 20 }} />
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ fontSize: 25, color: '#2C2C2C', textAlign: 'center' }}>
+                {'Ready For a \nnext-level group \nchat?'}
+              </Text>
+            </View>
+            <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonText}>Join a server</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button1}>
+              <Text style={styles.buttonText1}>Create a server</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
 
       <StatusBar barStyle="light-content" />
@@ -101,17 +152,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f2f2f2',
+    flexDirection: 'row',
   },
   sidebar: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
     width: 70,
     backgroundColor: '#50C878',
     alignItems: 'center',
+  },
+  fixedTop: {
     paddingTop: 40,
-    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  scrollArea: {
+    flexGrow: 1,
   },
   iconContainer: {
     alignItems: 'center',
@@ -137,17 +190,22 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     backgroundColor: '#50C878',
-    marginVertical: 10,
+    marginBottom: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  divider: {
+    height: 1,
+    width: 40,
+    backgroundColor: '#ccc',
+    marginVertical: 10,
+  },
   mainArea: {
     flex: 1,
-    marginLeft: 70,
     backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderBottomLeftRadius: 20,
-    paddingVertical: 15,
+    padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -182,5 +240,25 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
     fontSize: 20,
+  },
+  serverCircleWrapper: {
+    marginBottom: 10,
+  },
+  serverCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  serverInitial: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  serverImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
 });

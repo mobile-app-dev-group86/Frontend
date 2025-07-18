@@ -21,16 +21,38 @@ import MessageInputBar from "../components/MessageInputBar";
 
 const GroupChatScreen = () => {
   const router = useRouter();
-  const { groupName = "Group", groupImage = "https://i.pravatar.cc/150?img=5" } = useLocalSearchParams();
-  const userId = "u1";
+  const { groupName = "Group", groupImage = "https://i.pravatar.cc/150?img=5", groupId = "default" } = useLocalSearchParams();
+  const userId = "u1"; // Replace with dynamic ID in real app
   const STORAGE_KEY = `group_chat_${groupName}`;
 
   const [messages, setMessages] = useState([]);
+  const [groupStatus, setGroupStatus] = useState("");
   const flatListRef = useRef(null);
 
   useEffect(() => {
     loadMessages();
   }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetch(`https://your-backend.com/api/group/${groupId}/status`)
+        .then((res) => res.json())
+        .then((data) => {
+          const othersTyping = data.typingUsers?.filter((u) => u.userId !== userId);
+          if (othersTyping?.length > 0) {
+            setGroupStatus(`${othersTyping[0].username} is typing...`);
+          } else {
+            setGroupStatus(data.status || "");
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to fetch status", err);
+          setGroupStatus("");
+        });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [groupId]);
 
   const loadMessages = async () => {
     try {
@@ -156,12 +178,15 @@ const GroupChatScreen = () => {
             <Image source={{ uri: groupImage }} style={styles.groupImage} />
             <View style={styles.groupInfo}>
               <Text style={styles.groupName}>{groupName}</Text>
+              {!!groupStatus && (
+                <Text style={styles.groupStatus}>{groupStatus}</Text>
+              )}
             </View>
             <TouchableOpacity style={styles.iconsButton}>
-              <Ionicons name="call-outline" size={20} color="#7aff58" />
+              <Ionicons name="call-outline" size={30} color="green" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconsButton}>
-              <Ionicons name="videocam-outline" size={20} color="#7aff58" />
+              <Ionicons name="videocam-outline" size={30} color="green" />
             </TouchableOpacity>
           </View>
 
@@ -204,7 +229,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
-    paddingTop: 20, // Added to shift header downward
+    paddingTop: 20,
     backgroundColor: "#fff",
     paddingHorizontal: 12,
   },
@@ -213,7 +238,7 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     marginHorizontal: 12,
-    marginVertical: 16, // Added for vertical spacing
+    marginVertical: 16,
   },
   groupInfo: {
     flex: 1,
@@ -222,6 +247,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
     color: "#000",
+  },
+  groupStatus: {
+    fontSize: 13,
+    color: "gray",
+    marginTop: 2,
   },
   iconsButton: {
     marginLeft: 10,

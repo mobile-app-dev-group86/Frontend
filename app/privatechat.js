@@ -1,240 +1,212 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "expo-router";
 import {
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
+  Text,
+  StyleSheet,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
   KeyboardAvoidingView,
   Platform,
-  Keyboard,
-  TouchableWithoutFeedback,
-  ActionSheetIOS,
-  Alert,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import MessageBubble from "../components/MessageBubble";
-import MessageInputBar from "../components/MessageInputBar";
+import { Ionicons } from "@expo/vector-icons";
+import { useGlobalSearchParams, useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 
-const PrivateChatScreen = ({ route }) => {
+export default function PrivateChatScreen() {
   const router = useRouter();
-
-  const userId = "u1";
-  const otherUserId = route?.params?.userId || "u2";
-  const otherName = route?.params?.name || "User";
-  const otherAvatar = route?.params?.avatar || "https://example.com/avatar.png";
-  const STORAGE_KEY = `private_chat_${userId}_${otherUserId}`;
-
-  const [messages, setMessages] = useState([]);
   const flatListRef = useRef(null);
+  const { image, username, otherUserId, currentUserId } = useGlobalSearchParams();
 
+  const [text, setText] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [status, setStatus] = useState("offline"); // "online", "typing", etc.
+
+  // Fetch status of the other user (not yourself)
   useEffect(() => {
-    loadMessages();
-  }, []);
+    const interval = setInterval(() => {
+      fetch(`https://your-backend.com/status/${otherUserId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.userId !== currentUserId) {
+            setStatus(data.status); // Only show other user's status
+          } else {
+            setStatus(""); // Don't show your own status
+          }
+        })
+        .catch((err) => {
+          console.error("Status fetch error:", err);
+          setStatus("offline");
+        });
+    }, 3000);
 
-  const loadMessages = async () => {
-    try {
-      const storedMessages = await AsyncStorage.getItem(STORAGE_KEY);
-      if (storedMessages) {
-        setMessages(JSON.parse(storedMessages));
-        scrollToEnd();
-      }
-    } catch (e) {
-      console.error("Failed to load messages:", e);
+    return () => clearInterval(interval);
+  }, [otherUserId, currentUserId]);
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "online":
+        return "green";
+      case "typing":
+        return "orange";
+      default:
+        return "gray";
     }
   };
 
-  const saveMessages = async (updated) => {
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    } catch (e) {
-      console.error("Failed to save messages:", e);
+  const handleSend = () => {
+    if (text.trim() !== "") {
+      const newMessage = {
+        id: Date.now().toString(),
+        text: text.trim(),
+        sender: "me",
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+      setText("");
+
+      // Scroll to bottom after sending
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
     }
   };
 
-  const handleSend = (text) => {
-    const newMessage = {
-      id: Date.now().toString(),
-      text,
-      senderId: userId,
-      receiverId: otherUserId,
-      avatar: "https://example.com/avatar.png",
-    };
-    const updated = [...messages, newMessage];
-    setMessages(updated);
-    saveMessages(updated);
-    scrollToEnd();
-  };
-
-  const handleImage = (uri) => {
-    const newMessage = {
-      id: Date.now().toString(),
-      senderId: userId,
-      image: uri,
-      avatar: "https://i.pravatar.cc/300?img=1",
-    };
-    const updated = [...messages, newMessage];
-    setMessages(updated);
-    saveMessages(updated);
-    scrollToEnd();
-  };
-
-  const handleVoice = (uri) => {
-    const newMessage = {
-      id: Date.now().toString(),
-      senderId: userId,
-      voice: uri,
-      avatar: "https://example.com/avatar.png",
-    };
-    const updated = [...messages, newMessage];
-    setMessages(updated);
-    saveMessages(updated);
-    scrollToEnd();
-  };
-
-  const handleDelete = (messageId) => {
-    const updated = messages.filter((msg) => msg.id !== messageId);
-    setMessages(updated);
-    saveMessages(updated);
-  };
-
-  const handleForward = (messageId) => {
-    const message = messages.find((msg) => msg.id === messageId);
-    if (message) {
-      Alert.alert("Forwarded Message", message.text || "(media)");
-    }
-  };
-
-  const onLongPressMessage = (messageId) => {
-    const options = ["Cancel", "Forward", "Delete"];
-    const cancelButtonIndex = 0;
-    const deleteButtonIndex = 2;
-
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options,
-          cancelButtonIndex,
-          destructiveButtonIndex: deleteButtonIndex,
-        },
-        (buttonIndex) => {
-          if (buttonIndex === 1) handleForward(messageId);
-          if (buttonIndex === 2) handleDelete(messageId);
-        }
-      );
-    } else {
-      Alert.alert("Message Options", "Choose an action", [
-        { text: "Forward", onPress: () => handleForward(messageId) },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => handleDelete(messageId),
-        },
-        { text: "Cancel", style: "cancel" },
-      ]);
-    }
-  };
-
-  const scrollToEnd = () => {
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+  const renderMessage = ({ item }) => {
+    const isMyMessage = item.sender === "me";
+    return (
+      <View
+        style={[
+          styles.messageContainer,
+          isMyMessage ? styles.myMessage : styles.otherMessage,
+        ]}
+      >
+        <Text style={styles.messageText}>{item.text}</Text>
+      </View>
+    );
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 20}
-      >
-        <View style={styles.wrapper}>
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="arrow-back" size={24} color="#000" />
-            </TouchableOpacity>
-            <Image source={{ uri: otherAvatar }} style={styles.useravatar} />
-            <View style={styles.userNameContainer}>
-              <Text style={styles.userName}>{otherName}</Text>
-              <Text style={styles.onlineText}>online</Text>
-            </View>
-            <TouchableOpacity style={styles.iconsButton}>
-              <Ionicons name="call-outline" size={20} color="#7aff58" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconsButton}>
-              <Ionicons name="videocam-outline" size={20} color="#7aff58" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Messages */}
-          <FlatList
-            ref={flatListRef}
-            data={messages}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <MessageBubble
-                message={item}
-                isMe={item.senderId === userId}
-                onLongPress={() => onLongPressMessage(item.id)}
-              />
-            )}
-            onContentSizeChange={scrollToEnd}
-            onLayout={scrollToEnd}
-            contentContainerStyle={{ flexGrow: 1, paddingBottom: 60, paddingHorizontal: 10 }}
-            keyboardShouldPersistTaps="handled"
-          />
-
-          {/* Input */}
-          <MessageInputBar
-            onSend={handleSend}
-            onImage={handleImage}
-            onVoice={handleVoice}
-          />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={styles.container}
+    >
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+        <Image source={{ uri: image }} style={styles.profilePic} />
+        <View style={styles.nameStatus}>
+          <Text style={styles.username}>{username}</Text>
+          {!!status && (
+            <Text style={[styles.onlineText, { color: getStatusColor(status) }]}>
+              {status === "typing" ? "typing..." : status}
+            </Text>
+          )}
         </View>
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+      </View>
+
+      {/* Messages */}
+      <FlatList
+        data={messages}
+        keyExtractor={(item) => item.id}
+        renderItem={renderMessage}
+        contentContainerStyle={styles.messagesList}
+        ref={flatListRef}
+        onContentSizeChange={() =>
+          flatListRef.current?.scrollToEnd({ animated: true })
+        }
+      />
+
+      {/* Input */}
+      <View style={styles.inputContainer}>
+        <TextInput
+          placeholder="Type your message"
+          value={text}
+          onChangeText={setText}
+          style={styles.textInput}
+        />
+        <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+          <Ionicons name="send" size={24} color="white" />
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  wrapper: {
+  container: {
     flex: 1,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#f4f4f4",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 10,
-    paddingTop: 20, // Added to shift header downward
-    backgroundColor: "#fff",
-    paddingHorizontal: 12,
+    backgroundColor: "#075e54",
+    paddingTop: Platform.OS === "ios" ? 60 : 30,
+    paddingBottom: 15,
+    paddingHorizontal: 15,
   },
-  useravatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginHorizontal: 12,
-    marginVertical: 16, // Added for vertical spacing
-  },
-  userNameContainer: {
-    flex: 1,
-  },
-  userName: {
-    fontWeight: "bold",
-    fontSize: 16,
-    color: "#000",
-  },
-  onlineText: {
-    fontSize: 12,
-    color: "green",
-  },
-  iconsButton: {
+  profilePic: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     marginLeft: 10,
   },
+  nameStatus: {
+    marginLeft: 10,
+  },
+  username: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  onlineText: {
+    fontSize: 13,
+    fontWeight: "500",
+  },
+  messagesList: {
+    flexGrow: 1,
+    padding: 10,
+  },
+  messageContainer: {
+    padding: 10,
+    borderRadius: 8,
+    marginVertical: 4,
+    maxWidth: "70%",
+  },
+  myMessage: {
+    backgroundColor: "#dcf8c6",
+    alignSelf: "flex-end",
+  },
+  otherMessage: {
+    backgroundColor: "#ffffff",
+    alignSelf: "flex-start",
+  },
+  messageText: {
+    fontSize: 16,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    padding: 10,
+    backgroundColor: "white",
+    alignItems: "center",
+  },
+  textInput: {
+    flex: 1,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    marginRight: 10,
+    fontSize: 16,
+    backgroundColor: "#fff",
+  },
+  sendButton: {
+    backgroundColor: "#075e54",
+    padding: 10,
+    borderRadius: 20,
+  },
 });
-
-export default PrivateChatScreen;

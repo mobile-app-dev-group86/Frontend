@@ -96,7 +96,7 @@ const MessageInputBar = ({ onSend, onImage, onVoice }) => {
         returnKeyType="send"
       />
       <TouchableOpacity onPress={handleSend}>
-        <Ionicons name="send" size={24} color="#7aff58" />
+        <Ionicons name="send" size={24} color="green" />
       </TouchableOpacity>
     </View>
   );

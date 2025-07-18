@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   audio: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#7aff58",
+    backgroundColor: "green",
     padding: 10,
     borderRadius: 8,
     marginTop: 8,
