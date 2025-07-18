@@ -49,52 +49,48 @@ export default function SettingsScreen() {
       label: "Devices",
       onPress: () => router.push("/settings/devices"),
     },
+    
     {
       key: "3",
-      label: "Appearance",
-      onPress: () => router.push("/settings/appearance"),
-    },
-    {
-      key: "4",
       label: "Channel settings screen",
       onPress: () => router.push("/settings/channelSettings"),
     },
     {
-      key: "5",
+      key: "4",
       label: "Privacy and safety",
       onPress: () => router.push("/settings/privacySafety"),
     },
     {
-      key: "6",
+      key: "5",
       label: "Connections",
       onPress: () => router.push("/settings/connections"),
     },
     {
-      key: "7",
+      key: "6",
       label: "Accessibility",
       onPress: () => router.push("/settings/accessibility"),
     },
     {
-      key: "8",
+      key: "7",
       label: "Authorized Apps",
       onPress: () => router.push("/settings/authorizedApps"),
     },
     {
-      key: "9",
+      key: "8",
       label: "Activity feed",
       onPress: () => router.push("/settings/activityFeed"),
     },
     {
-      key: "10",
+      key: "9",
       label: "Server settings",
       onPress: () => router.push("/settings/serverSettings"),
     },
     {
-      key: "11",
-      label: "Log Out",
-      isLogout: true,
-      onPress: handleLogout,
-    },
+  key: "10",
+  label: "Log Out",
+  isLogout: true,
+  onPress: () => router.push('/LoginScreen')
+}
   ];
 
   const filteredSettings = settingsData.filter((item) =>

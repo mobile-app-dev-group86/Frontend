@@ -13,7 +13,8 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Audio } from 'expo-av';
 
-// const RINGTONE = require('../assets/sound2.mp3');
+// const RINGTONE = require('../assets/sounds/sound1.mp3');
+// const NOTIFICATION_SOUND = require('../assets/sounds/sound2.mp3');
 
 export default function PrivateScreen({ route, navigation }) {
   const [messages, setMessages] = useState([]);
@@ -25,7 +26,6 @@ export default function PrivateScreen({ route, navigation }) {
 
   const userId = route?.params?.userId;
 
-  // Fetch profile
   useEffect(() => {
     fetch(`https://your-backend.com/api/user/${userId}`)
       .then(res => res.json())
@@ -33,7 +33,6 @@ export default function PrivateScreen({ route, navigation }) {
       .catch(err => console.error(err));
   }, [userId]);
 
-  // WebSocket
   useEffect(() => {
     ws.current = new WebSocket(`wss://your-websocket-url.com/private/${userId}`);
 
@@ -42,6 +41,7 @@ export default function PrivateScreen({ route, navigation }) {
 
       if (data.type === 'message') {
         setMessages(prev => [...prev, data.message]);
+        playNotificationSound(); // ✅ Play notification on new message
       }
 
       if (data.type === 'INCOMING_PRIVATE_CALL') {
@@ -49,7 +49,7 @@ export default function PrivateScreen({ route, navigation }) {
         if (Platform.OS === 'android') Vibration.vibrate([500, 500, 1000]);
         navigation.navigate('IncomingCallScreen', {
           caller: data.caller,
-          type: data.callType, // 'audio' or 'video'
+          type: data.callType || 'audio',
         });
       }
     };
@@ -74,7 +74,14 @@ export default function PrivateScreen({ route, navigation }) {
       await sound.stopAsync();
       await sound.unloadAsync();
     }
+
     const { sound: newSound } = await Audio.Sound.createAsync({ uri });
+    setSound(newSound);
+    await newSound.playAsync();
+  };
+
+  const playNotificationSound = async () => {
+    const { sound: newSound } = await Audio.Sound.createAsync(NOTIFICATION_SOUND);
     setSound(newSound);
     await newSound.playAsync();
   };
@@ -114,24 +121,24 @@ export default function PrivateScreen({ route, navigation }) {
           <Text style={styles.name}>{profile.name}</Text>
           <View style={styles.actions}>
             <TouchableOpacity
-              onPress={() =>
+              onPress={() => {
                 navigation.navigate('CallScreen', {
                   userId,
                   profile,
                   type: 'audio',
-                })
-              }
+                });
+              }}
             >
               <Ionicons name="call-outline" size={24} color="green" />
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() =>
+              onPress={() => {
                 navigation.navigate('CallScreen', {
                   userId,
                   profile,
                   type: 'video',
-                })
-              }
+                });
+              }}
             >
               <Ionicons name="videocam-outline" size={24} color="green" />
             </TouchableOpacity>
