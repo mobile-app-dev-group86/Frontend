@@ -31,24 +31,26 @@ export default function PrivateScreen() {
   const flatListRef = useRef(null);
   const STORAGE_KEY = `private_chat_${userId}`;
 
-  useEffect(() => {
-    // Fetch user profile
-    fetch(`https://your-backend.com/api/user/${userId}`, {
-      headers: { Authorization: `Bearer ${await getToken()}` },
-    })
-      .then((res) => {
+useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = await getToken();
+        const res = await fetch(`https://your-backend.com/api/user/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!res.ok) throw new Error('Failed to fetch profile');
-        return res.json();
-      })
-      .then((data) => setProfile(data))
-      .catch((err) => console.error('Profile fetch error:', err));
+        const data = await res.json();
+        setProfile(data);
+      } catch (err) {
+        console.error('Profile fetch error:', err);
+      }
+    };
 
-    // Load stored messages
+    fetchProfile();
     loadMessages();
   }, [userId]);
 
   useEffect(() => {
-    // Initialize WebSocket
     ws.current = new WebSocket(`wss://your-websocket-url.com/private/${userId}`);
 
     ws.current.onmessage = async (event) => {
@@ -80,7 +82,7 @@ export default function PrivateScreen() {
       stopRingtone();
       sound?.unloadAsync();
     };
-  }, [messages]);
+  }, []);
 
   const getToken = async () => {
     // Replace with your auth token retrieval logic
@@ -107,10 +109,8 @@ export default function PrivateScreen() {
     }
   };
 
-  const scrollToEnd = () => {
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+const scrollToEnd = () => {
+    flatListRef.current?.scrollToEnd({ animated: true });
   };
 
   const sendMessage = async (text) => {
@@ -213,8 +213,8 @@ export default function PrivateScreen() {
     }
   };
 
-  const handleLongPress = (id) => {
-    // Implement delete/forward logic similar to GroupChatScreen
+const handleLongPress = (id) => {
+    // TODO: Implement delete/forward logic similar to GroupChatScreen
   };
 
   return (

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "",
+    "name": "Chatterly",
     "slug": "chatterly",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -18,8 +18,6 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-
-      
       "permissions": [
         "READ_MEDIA_IMAGES",
         "READ_EXTERNAL_STORAGE",

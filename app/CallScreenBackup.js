@@ -1,10 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Image,
+  Platform,
+  Vibration,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -22,11 +24,16 @@ export default function CallScreen() {
   const timerRef = useRef(null);
 
   useEffect(() => {
+    // Start outgoing call ringtone
     playRingtone();
+
+    // Keep screen awake
+    // activateKeepAwake(); // Removed due to dependency on react-native-webrtc
 
     return () => {
       stopRingtone();
       clearInterval(timerRef.current);
+      // deactivateKeepAwake(); // Removed due to dependency on react-native-webrtc
     };
   }, []);
 
