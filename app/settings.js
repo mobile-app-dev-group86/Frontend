@@ -29,7 +29,7 @@ export default function SettingsScreen() {
         {
           text: "Yes",
           onPress: () => {
-            router.replace("/login"); // Replace with your actual login route
+            router.replace("/loginScreen"); // Replace with your actual login route
           },
           style: "destructive",
         },
@@ -86,11 +86,11 @@ export default function SettingsScreen() {
       onPress: () => router.push("/settings/serverSettings"),
     },
     {
-  key: "10",
-  label: "Log Out",
-  isLogout: true,
-  onPress: () => router.push('/LoginScreen')
-}
+      key: "10",
+      label: "Log Out",
+      isLogout: true,
+      onPress: handleLogout,
+    },
   ];
 
   const filteredSettings = settingsData.filter((item) =>

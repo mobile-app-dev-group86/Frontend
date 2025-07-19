@@ -1,296 +1,398 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { useEffect, useRef, useState } from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState, useRef } from 'react';
 import {
-  FlatList,
-  Image,
-  StyleSheet,
+  View,
   Text,
   TouchableOpacity,
-  View,
-  KeyboardAvoidingView,
+  StyleSheet,
+  Image,
+  Modal,
   Platform,
-  Keyboard,
-  TouchableWithoutFeedback,
-  ActionSheetIOS,
-  Alert,
   Vibration,
-} from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import MessageBubble from "../components/MessageBubble";
-import MessageInputBar from "../components/MessageInputBar";
-import { Audio } from "expo-av";
-import { io } from "socket.io-client";
+} from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Audio } from 'expo-av';
+import { RTCView, RTCPeerConnection, MediaStream } from 'react-native-webrtc';
+import { activateKeepAwake, deactivateKeepAwake } from 'expo-keep-awake';
 
-const GroupChatScreen = () => {
+const CALL_SOCKET_URL = 'ws://your-backend-url/group-call';
+const RINGTONE_INCOMING = require('../assets/sounds/sound2.mp3');
+
+export default function GroupCallScreen() {
   const router = useRouter();
-  const {
-    groupName = "Group",
-    groupImage = "https://i.pravatar.cc/150?img=5",
-    groupId = "default",
-  } = useLocalSearchParams();
-
-  const userId = "u1"; // TODO: Replace with dynamic ID from auth/user context
-  const STORAGE_KEY = `group_chat_${groupName}`;
-  const flatListRef = useRef(null);
-
-  const [messages, setMessages] = useState([]);
-  const [groupStatus, setGroupStatus] = useState("");
-  const [socket, setSocket] = useState(null);
+  const { groupName, groupImage, groupId, isGroup, callType } = useLocalSearchParams();
+  const [isMuted, setIsMuted] = useState(false);
+  const [isCameraOn, setIsCameraOn] = useState(callType === 'video');
+  const [callTimer, setCallTimer] = useState(0);
+  const [showIncomingModal, setShowIncomingModal] = useState(false);
+  const [incomingCaller, setIncomingCaller] = useState(null);
+  const [localStream, setLocalStream] = useState(null);
+  const [remoteStreams, setRemoteStreams] = useState([]);
   const [sound, setSound] = useState(null);
+  const ws = useRef(null);
+  const pc = useRef(null);
+  const timerRef = useRef(null);
 
   useEffect(() => {
-    loadMessages();
-    setupSocket();
+    // Initialize WebSocket
+    ws.current = new WebSocket(CALL_SOCKET_URL);
+
+    ws.current.onopen = () => {
+      console.log('WebSocket connected');
+      ws.current.send(JSON.stringify({ type: 'join-group', groupId }));
+    };
+
+    ws.current.onmessage = async (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.type === 'INCOMING_GROUP_CALL') {
+        setIncomingCaller(data.caller);
+        setShowIncomingModal(true);
+        await playRingtone();
+        if (Platform.OS === 'android') Vibration.vibrate([1000, 500, 1000]);
+      } else if (data.type === 'offer') {
+        await handleOffer(data.offer, data.callerId);
+      } else if (data.type === 'answer') {
+        await handleAnswer(data.answer, data.callerId);
+      } else if (data.type === 'ice-candidate') {
+        await handleIceCandidate(data.candidate, data.callerId);
+      } else if (data.type === 'END_CALL') {
+        endCall();
+      }
+    };
+
+    ws.current.onerror = (e) => console.error('WebSocket error:', e);
+    ws.current.onclose = () => console.log('WebSocket closed');
+
+    // Initialize WebRTC
+    pc.current = new RTCPeerConnection({
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+    });
+
+    pc.current.onicecandidate = (event) => {
+      if (event.candidate) {
+        ws.current?.send(JSON.stringify({ 
+          type: 'ice-candidate', 
+          candidate: event.candidate,
+          groupId 
+        }));
+      }
+    };
+
+    pc.current.ontrack = (event) => {
+      setRemoteStreams((prev) => {
+        const existing = prev.find((s) => s.id === event.streams[0].id);
+        if (!existing) {
+          return [...prev, event.streams[0]];
+        }
+        return prev;
+      });
+    };
+
+    // Get local stream
+    getMediaStream();
+
+    // Keep screen awake
+    activateKeepAwake();
+
     return () => {
-      if (socket) socket.disconnect();
-      if (sound) sound.unloadAsync();
+      ws.current?.close();
+      pc.current?.close();
+      stopRingtone();
+      clearInterval(timerRef.current);
+      deactivateKeepAwake();
+      if (localStream) {
+        localStream.getTracks().forEach((track) => track.stop());
+      }
     };
   }, []);
 
-  const setupSocket = () => {
-    const newSocket = io("https://your-backend.com"); // TODO: Update this URL
-    newSocket.emit("joinGroup", { groupId, userId });
-
-    newSocket.on("incoming-group-call", async (data) => {
-      if (data.groupId === groupId && data.callerId !== userId) {
-        await playRingtone();
-        Vibration.vibrate([500, 500, 500], true);
-        router.push({
-          pathname: "/IncomingCallModal",
-          params: {
-            callType: data.callType,
-            callerName: data.callerName,
-            callerImage: data.callerImage,
-            groupId: data.groupId,
-            isGroup: true,
-          },
-        });
+  const getMediaStream = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: callType === 'video' ? { facingMode: 'user' } : false,
+      });
+      setLocalStream(stream);
+      stream.getTracks().forEach((track) => pc.current.addTrack(track, stream));
+      if (!isCameraOn && callType === 'video') {
+        stream.getVideoTracks().forEach((track) => (track.enabled = false));
       }
-    });
+      if (isMuted) {
+        stream.getAudioTracks().forEach((track) => (track.enabled = false));
+      }
+    } catch (error) {
+      console.error('Failed to get media stream:', error);
+    }
+  };
 
-    setSocket(newSocket);
+  const handleOffer = async (offer, callerId) => {
+    try {
+      await pc.current.setRemoteDescription(new RTCSessionDescription(offer));
+      const answer = await pc.current.createAnswer();
+      await pc.current.setLocalDescription(answer);
+      ws.current?.send(JSON.stringify({ 
+        type: 'answer', 
+        answer, 
+        groupId, 
+        callerId 
+      }));
+      startCallTimer();
+    } catch (error) {
+      console.error('Failed to handle offer:', error);
+    }
+  };
+
+  const handleAnswer = async (answer, callerId) => {
+    try {
+      await pc.current.setRemoteDescription(new RTCSessionDescription(answer));
+    } catch (error) {
+      console.error('Failed to handle answer:', error);
+    }
+  };
+
+  const handleIceCandidate = async (candidate, callerId) => {
+    try {
+      await pc.current.addIceCandidate(new RTCIceCandidate(candidate));
+    } catch (error) {
+      console.error('Failed to add ICE candidate:', error);
+    }
   };
 
   const playRingtone = async () => {
     try {
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        require("../assets/sound1.mp3") // PLACE RINGTONE IN `assets/`
-      );
+      const { sound: newSound } = await Audio.Sound.createAsync(RINGTONE_INCOMING);
       setSound(newSound);
+      await newSound.setIsLoopingAsync(true);
       await newSound.playAsync();
     } catch (error) {
-      console.error("Failed to play ringtone", error);
+      console.error('Failed to play ringtone:', error);
     }
   };
 
-  const scrollToEnd = () => {
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  };
-
-  const loadMessages = async () => {
-    try {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setMessages(JSON.parse(stored));
-        scrollToEnd();
-      }
-    } catch (e) {
-      console.error("Error loading messages:", e);
+  const stopRingtone = async () => {
+    if (sound) {
+      await sound.stopAsync();
+      await sound.unloadAsync();
+      setSound(null);
     }
   };
 
-  const saveMessages = async (updated) => {
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    } catch (e) {
-      console.error("Error saving messages:", e);
+  const acceptCall = () => {
+    stopRingtone();
+    setShowIncomingModal(false);
+    startCallTimer();
+    ws.current?.send(JSON.stringify({ type: 'ACCEPT_CALL', groupId }));
+  };
+
+  const declineCall = () => {
+    stopRingtone();
+    setShowIncomingModal(false);
+    ws.current?.send(JSON.stringify({ type: 'DECLINE_CALL', groupId }));
+    router.back();
+  };
+
+  const startCallTimer = () => {
+    timerRef.current = setInterval(() => {
+      setCallTimer((prev) => prev + 1);
+    }, 1000);
+  };
+
+  const endCall = () => {
+    clearInterval(timerRef.current);
+    setCallTimer(0);
+    ws.current?.send(JSON.stringify({ type: 'END_CALL', groupId }));
+    router.back();
+  };
+
+  const toggleMute = () => {
+    if (localStream) {
+      localStream.getAudioTracks().forEach((track) => (track.enabled = !isMuted));
     }
+    setIsMuted(!isMuted);
   };
 
-  const handleSend = (text) => {
-    const newMsg = {
-      id: Date.now().toString(),
-      text,
-      senderId: userId,
-      avatar: `https://i.pravatar.cc/100?u=${userId}`,
-    };
-    const updated = [...messages, newMsg];
-    setMessages(updated);
-    saveMessages(updated);
-    scrollToEnd();
-  };
-
-  const handleImage = (uri) => {
-    const newMsg = {
-      id: Date.now().toString(),
-      senderId: userId,
-      image: uri,
-      avatar: `https://i.pravatar.cc/100?u=${userId}`,
-    };
-    const updated = [...messages, newMsg];
-    setMessages(updated);
-    saveMessages(updated);
-    scrollToEnd();
-  };
-
-  const handleVoice = (uri) => {
-    const newMsg = {
-      id: Date.now().toString(),
-      senderId: userId,
-      voice: uri,
-      avatar: `https://i.pravatar.cc/100?u=${userId}`,
-    };
-    const updated = [...messages, newMsg];
-    setMessages(updated);
-    saveMessages(updated);
-    scrollToEnd();
-  };
-
-  const handleDelete = (id) => {
-    const updated = messages.filter((m) => m.id !== id);
-    setMessages(updated);
-    saveMessages(updated);
-  };
-
-  const handleForward = (id) => {
-    const message = messages.find((m) => m.id === id);
-    if (message) Alert.alert("Forwarded", message.text || "(media)");
-  };
-
-  const onLongPressMessage = (id) => {
-    const options = ["Cancel", "Forward", "Delete"];
-    const cancel = 0, del = 2;
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        { options, cancelButtonIndex: cancel, destructiveButtonIndex: del },
-        (i) => {
-          if (i === 1) handleForward(id);
-          if (i === 2) handleDelete(id);
-        }
-      );
-    } else {
-      Alert.alert("Options", "", [
-        { text: "Forward", onPress: () => handleForward(id) },
-        { text: "Delete", style: "destructive", onPress: () => handleDelete(id) },
-        { text: "Cancel", style: "cancel" },
-      ]);
+  const toggleCamera = () => {
+    if (localStream && callType === 'video') {
+      localStream.getVideoTracks().forEach((track) => (track.enabled = !isCameraOn));
     }
+    setIsCameraOn(!isCameraOn);
   };
 
-  const makeCall = (type) => {
-    if (socket) {
-      socket.emit("initiate-group-call", {
-        groupId,
-        callerId: userId,
-        callType: type,
-      });
-      router.push({
-        pathname: "/CallScreen",
-        params: {
-          callType: type,
-          groupName,
-          groupImage,
-          isGroup: true,
-          groupId,
-        },
-      });
-    }
+  const formatTimer = () => {
+    const mins = Math.floor(callTimer / 60);
+    const secs = callTimer % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 20}
-      >
-        <View style={styles.wrapper}>
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="arrow-back" size={24} color="#000" />
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>{groupName || 'Group Call'}</Text>
+        <Text style={styles.timer}>{formatTimer()}</Text>
+        <Image
+          source={{ uri: groupImage || 'https://placehold.co/100x100' }}
+          style={styles.avatar}
+        />
+      </View>
+
+      {callType === 'video' && (
+        <View style={styles.videoContainer}>
+          {remoteStreams.map((stream, index) => (
+            <RTCView
+              key={stream.id}
+              streamURL={stream.toURL()}
+              style={styles.remoteVideo}
+            />
+          ))}
+          {localStream && (
+            <RTCView streamURL={localStream.toURL()} style={styles.localVideo} />
+          )}
+        </View>
+      )}
+
+      <View style={styles.controls}>
+        <TouchableOpacity onPress={toggleMute} style={styles.button}>
+          <Ionicons name={isMuted ? 'mic-off' : 'mic'} size={28} color="#fff" />
+        </TouchableOpacity>
+        {callType === 'video' && (
+          <TouchableOpacity onPress={toggleCamera} style={styles.button}>
+            <Ionicons name={isCameraOn ? 'videocam' : 'videocam-off'} size={28} color="#fff" />
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity
+          onPress={() => router.push('/messages')}
+          style={styles.button}
+        >
+          <Ionicons name="chatbubble" size={28} color="#fff" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={endCall} style={[styles.button, styles.endButton]}>
+          <Ionicons name="call" size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      <Modal visible={showIncomingModal} transparent animationType="slide">
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalText}>
+            {incomingCaller?.name || 'Someone'} is calling...
+          </Text>
+          <Image
+            source={{ uri: incomingCaller?.profilePicture || 'https://placehold.co/100x100' }}
+            style={styles.modalAvatar}
+          />
+          {localStream && callType === 'video' && (
+            <RTCView streamURL={localStream.toURL()} style={styles.modalPreview} />
+          )}
+          <View style={styles.modalButtons}>
+            <TouchableOpacity onPress={declineCall} style={[styles.button, styles.decline]}>
+              <Ionicons name="call" size={28} color="#fff" />
             </TouchableOpacity>
-            <Image source={{ uri: groupImage }} style={styles.groupImage} />
-            <View style={styles.groupInfo}>
-              <Text style={styles.groupName}>{groupName}</Text>
-              {!!groupStatus && (
-                <Text style={styles.groupStatus}>{groupStatus}</Text>
-              )}
-            </View>
-            <TouchableOpacity onPress={() => makeCall("voice")} style={styles.iconsButton}>
-              <Ionicons name="call-outline" size={30} color="green" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => makeCall("video")} style={styles.iconsButton}>
-              <Ionicons name="videocam-outline" size={30} color="green" />
+            <TouchableOpacity onPress={acceptCall} style={[styles.button, styles.accept]}>
+              <Ionicons name="call" size={28} color="#fff" />
             </TouchableOpacity>
           </View>
-
-          <FlatList
-            ref={flatListRef}
-            data={messages}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <MessageBubble
-                message={item}
-                isMe={item.senderId === userId}
-                onLongPress={() => onLongPressMessage(item.id)}
-              />
-            )}
-            onContentSizeChange={scrollToEnd}
-            onLayout={scrollToEnd}
-            contentContainerStyle={{ flexGrow: 1, paddingBottom: 60, paddingHorizontal: 10 }}
-            keyboardShouldPersistTaps="handled"
-          />
-
-          <MessageInputBar
-            onSend={handleSend}
-            onImage={handleImage}
-            onVoice={handleVoice}
-          />
         </View>
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+      </Modal>
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  wrapper: {
+  container: {
     flex: 1,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: '#e0ffe0',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 10,
-    paddingTop: 20,
-    backgroundColor: "#fff",
-    paddingHorizontal: 12,
+    alignItems: 'center',
+    marginBottom: 20,
   },
-  groupImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginHorizontal: 12,
-    marginVertical: 16,
+  title: {
+    fontSize: 26,
+    color: '#1B5E20',
+    fontWeight: 'bold',
   },
-  groupInfo: {
+  timer: {
+    fontSize: 18,
+    color: '#1B5E20',
+    marginVertical: 10,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 10,
+  },
+  videoContainer: {
     flex: 1,
+    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
   },
-  groupName: {
-    fontWeight: "bold",
-    fontSize: 16,
-    color: "#000",
+  remoteVideo: {
+    width: '45%',
+    height: 200,
+    margin: 5,
+    backgroundColor: '#000',
+    borderRadius: 10,
   },
-  groupStatus: {
-    fontSize: 13,
-    color: "gray",
-    marginTop: 2,
+  localVideo: {
+    width: 120,
+    height: 160,
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#fff',
   },
-  iconsButton: {
-    marginLeft: 10,
+  controls: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    width: '90%',
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#4CAF50',
+    padding: 15,
+    borderRadius: 40,
+  },
+  endButton: {
+    backgroundColor: '#E53935',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalText: {
+    fontSize: 20,
+    marginBottom: 15,
+    color: '#1B5E20',
+  },
+  modalAvatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 25,
+  },
+  modalPreview: {
+    width: 120,
+    height: 160,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 30,
+  },
+  decline: {
+    backgroundColor: '#E53935',
+  },
+  accept: {
+    backgroundColor: '#4CAF50',
   },
 });
-
-export default GroupChatScreen;

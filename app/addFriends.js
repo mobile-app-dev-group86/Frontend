@@ -31,7 +31,7 @@ export default function AddFriendsScreen() {
   const navigation = useNavigation();
   const router = useRouter(); 
 
-  const inviteMessage = "Hey! Add me on Discord using this link: https://yourapp.com/invite";
+  const inviteMessage = "Hey! Add me on Chatterly using this link: https://yourapp.com/invite";
 
   const handleCopyLink = async () => {
     await Clipboard.setStringAsync(inviteMessage);
