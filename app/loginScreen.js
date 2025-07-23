@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import github from "../assets/images/github.png";
+import githubLogo from "../assets/images/github.png";
 import googleLogo from "../assets/images/google.png";
 
 const LoginScreen = () => {
@@ -157,7 +157,7 @@ if (response.ok) {
           <TouchableOpacity>
             <View style={styles.circle}>
               <Image
-                source={github}
+                source={githubLogo}
                 style={{ width: 40, height: 40, resizeMode: "contain" }}
               />
             </View>
@@ -191,8 +191,14 @@ if (response.ok) {
           </TouchableOpacity>
         </View>
         <View style={{ marginBottom: 10 }}>
-          <TouchableOpacity onPress={() => router.push('/serverDetails')}>
-            <Text style={{ color: 'green', textAlign: 'right' }}>serverdetails</Text>
+          <TouchableOpacity onPress={() => router.push('/IncomingCallScreen')}>
+            <Text style={{ color: 'green', textAlign: 'right' }}>incomingCallScreen</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={{ marginBottom: 10 }}>
+          <TouchableOpacity onPress={() => router.push('/incomingvoicecall')}>
+            <Text style={{ color: 'green', textAlign: 'right' }}>incomingvoiceScreen</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

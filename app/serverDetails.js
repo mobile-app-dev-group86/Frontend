@@ -70,7 +70,7 @@ const ServerDetailsScreen = ({ serverId }) => {
 
         {/* Action Icons Row */}
         <View style={styles.actionsRow}>
-          <TouchableOpacity onPress={() => console.log("Add people")}>
+          <TouchableOpacity onPress={() => router.push({ pathname: '/addFriends', params: { serverInvite: serverData?.inviteLink || `https://yourapp.com/invite/${serverId}` } })}>
             <Ionicons name="person-add-outline" size={24} color="green" />
           </TouchableOpacity>
 

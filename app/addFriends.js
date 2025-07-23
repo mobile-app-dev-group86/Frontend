@@ -1,5 +1,5 @@
 import React from "react";
-import { useRouter } from 'expo-router'; 
+import { useRouter, useLocalSearchParams } from 'expo-router'; 
 
 import {
   View,
@@ -30,8 +30,10 @@ import { useNavigation } from "@react-navigation/native";
 export default function AddFriendsScreen() {
   const navigation = useNavigation();
   const router = useRouter(); 
-
-  const inviteMessage = "Hey! Add me on Chatterly using this link: https://yourapp.com/invite";
+  const { serverInvite } = useLocalSearchParams();
+  const inviteMessage = serverInvite
+    ? `Hey! Join my server on Chatterly using this link: ${serverInvite}`
+    : "Hey! Add me on Chatterly using this link: https://yourapp.com/invite";
 
   const handleCopyLink = async () => {
     await Clipboard.setStringAsync(inviteMessage);

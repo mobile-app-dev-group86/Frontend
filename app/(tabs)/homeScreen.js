@@ -9,6 +9,9 @@ import {
   TouchableOpacity,
   StatusBar,
   FlatList,
+  Modal,
+  TextInput,
+  Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -31,6 +34,8 @@ export default function HomeScreen() {
 
   const [servers, setServers] = useState([]);
   const [selectedServer, setSelectedServer] = useState(null);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joinServerLink, setJoinServerLink] = useState('');
 
   const fetchServers = async () => {
     try {
@@ -53,6 +58,12 @@ export default function HomeScreen() {
     setSelectedServer(server);
   };
 
+  const handleJoinPress = () => {
+    Alert.alert("Server Not Found", `Server with link "${joinServerLink}" does not exist.`);
+    setJoinServerLink('');
+    setShowJoinModal(false);
+  };
+
   const renderServerCircle = ({ item }) => (
     <TouchableOpacity
       style={styles.serverCircleWrapper}
@@ -69,81 +80,112 @@ export default function HomeScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Sidebar */}
-      <View style={styles.sidebar}>
-        {/* Fixed Top: Logo + Icons */}
-        <View style={styles.fixedTop}>
-          <View style={styles.circle1}>
-            <Image source={gamepad} style={{ width: 50, height: 50, borderRadius: 25 }} />
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        {/* Sidebar */}
+        <View style={styles.sidebar}>
+          {/* Fixed Top: Logo + Icons */}
+          <View style={styles.fixedTop}>
+            <View style={styles.circle1}>
+              <Image source={gamepad} style={{ width: 50, height: 50, borderRadius: 25 }} />
+            </View>
+
+            <TouchableOpacity onPress={() => router.push('/createServer')}>
+              <View style={styles.iconContainer}>
+                <View style={styles.circle}>
+                  <FontAwesome6 name="add" size={24} color="#000000" />
+                </View>
+                {pathname === '/createServer' && <View style={styles.activeLine} />}
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => router.push('/hub')}>
+              <View style={styles.iconContainer}>
+                <View style={styles.circle}>
+                  <FontAwesome5 name="network-wired" size={24} color="#000000" />
+                </View>
+                {pathname === '/hub' && <View style={styles.activeLine} />}
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => router.push('/messageScreen')}>
+              <View style={styles.iconContainer}>
+                <View style={styles.circle}>
+                  <Feather name="message-circle" size={24} color="#000000" />
+                </View>
+                {pathname === '/messageScreen' && <View style={styles.activeLine} />}
+              </View>
+            </TouchableOpacity>
+
+            {/* Divider */}
+            <View style={styles.divider} />
           </View>
 
-          <TouchableOpacity onPress={() => router.push('/createServer')}>
-            <View style={styles.iconContainer}>
-              <View style={styles.circle}>
-                <FontAwesome6 name="add" size={24} color="#000000" />
-              </View>
-              {pathname === '/createServer' && <View style={styles.activeLine} />}
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => router.push('/hub')}>
-            <View style={styles.iconContainer}>
-              <View style={styles.circle}>
-                <FontAwesome5 name="network-wired" size={24} color="#000000" />
-              </View>
-              {pathname === '/hub' && <View style={styles.activeLine} />}
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => router.push('/messageScreen')}>
-            <View style={styles.iconContainer}>
-              <View style={styles.circle}>
-                <Feather name="message-circle" size={24} color="#000000" />
-              </View>
-              {pathname === '/messageScreen' && <View style={styles.activeLine} />}
-            </View>
-          </TouchableOpacity>
-
-          {/* Divider */}
-          <View style={styles.divider} />
+          {/* Scrollable Server List */}
+          <FlatList
+            data={servers}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderServerCircle}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 40 }}
+            style={styles.scrollArea}
+          />
         </View>
 
-        {/* Scrollable Server List */}
-        <FlatList
-          data={servers}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderServerCircle}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
-          style={styles.scrollArea}
-        />
-      </View>
+        {/* Main Content */}
+        <View style={styles.mainArea}>
+          {selectedServer ? (
+            <ServerDetailsScreen serverId={selectedServer.id} />
+          ) : (
+            <>
+              <Text style={{ fontSize: 40 }}>Servers</Text>
+              <Image source={homeimage} style={{ width: 200, height: 200, marginTop: 20 }} />
+              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 25, color: '#2C2C2C', textAlign: 'center' }}>
+                  {'Ready For a \nnext-level group \nchat?'}
+                </Text>
+              </View>
+              <TouchableOpacity style={styles.button} onPress={() => setShowJoinModal(true)}>
+                <Text style={styles.buttonText}>Join a server</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.button1} onPress={() => router.push('/template2')}>
+                <Text style={styles.buttonText1}>Create a server</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
 
-      {/* Main Content */}
-      <View style={styles.mainArea}>
-        {selectedServer ? (
-          <ServerDetailsScreen serverId={selectedServer.id} />
-        ) : (
-          <>
-            <Text style={{ fontSize: 40 }}>Servers</Text>
-            <Image source={homeimage} style={{ width: 200, height: 200, marginTop: 20 }} />
-            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ fontSize: 25, color: '#2C2C2C', textAlign: 'center' }}>
-                {'Ready For a \nnext-level group \nchat?'}
-              </Text>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={showJoinModal}
+          onRequestClose={() => setShowJoinModal(false)}
+        >
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+            <View style={{ backgroundColor: 'white', borderRadius: 20, padding: 20, width: 300 }}>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10 }}>Join via Link</Text>
+              <TextInput
+                style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 10, padding: 10, marginBottom: 15 }}
+                placeholder="Enter server invite link"
+                value={joinServerLink}
+                onChangeText={setJoinServerLink}
+                placeholderTextColor="#999"
+              />
+              <TouchableOpacity style={{ backgroundColor: 'green', borderRadius: 10, padding: 12, marginBottom: 10 }} onPress={handleJoinPress}>
+                <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>Join</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={{ backgroundColor: '#eee', borderRadius: 10, padding: 12, marginBottom: 10 }} onPress={() => { setShowJoinModal(false); router.push('/hub'); }}>
+                <Text style={{ color: '#333', textAlign: 'center', fontWeight: 'bold' }}>Join Hub</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowJoinModal(false)}>
+                <Text style={{ color: 'red', textAlign: 'center' }}>Cancel</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Join a server</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button1}>
-              <Text style={styles.buttonText1}>Create a server</Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
+          </View>
+        </Modal>
 
-      <StatusBar barStyle="light-content" />
+        <StatusBar barStyle="light-content" />
+      </View>
     </SafeAreaView>
   );
 }

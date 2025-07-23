@@ -47,6 +47,8 @@ export default function RootLayout() {
           <Stack.Screen name="search" options={{ headerShown: false }} />
           <Stack.Screen name="inviteFriend" options={{ headerShown: false }} />
           <Stack.Screen name="viewImage" options={{ headerShown: false }} />
+          <Stack.Screen name="incomingCallScreen" options={{ headerShown: false }} />
+          <Stack.Screen name="incomingvoicecall" options={{ headerShown: false }} />
           <Stack.Screen name="(modal)" options={{ presentation: 'modal' }} />
           <Stack.Screen name="not-found" options={{ title: 'Oops!' }} />
         </Stack>

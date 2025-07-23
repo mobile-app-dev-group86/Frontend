@@ -2,8 +2,8 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import instagram from '../assets/images/instagram.png';
-import googleLogo from '../assets/images/github.png';
+import googleLogo from '../assets/images/google.png';
+import githubLogo from '../assets/images/github.png';
 
 const SignUp = () => {
   const [userName, setUserName] = useState('');
@@ -203,7 +203,7 @@ const SignUp = () => {
         </TouchableOpacity>
         <TouchableOpacity>
           <View style={styles.circle}>
-            <Image source={instagram} style={{ width: 40, height: 40, resizeMode: 'contain' }} />
+            <Image source={githubLogo} style={{ width: 40, height: 40, resizeMode: 'contain' }} />
           </View>
         </TouchableOpacity>
       </View>
