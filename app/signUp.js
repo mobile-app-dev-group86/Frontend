@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import instagram from '../assets/images/instagram.png';
-import googleLogo from '../assets/images/google.png';
+import googleLogo from '../assets/images/github.png';
 
 const SignUp = () => {
   const [userName, setUserName] = useState('');

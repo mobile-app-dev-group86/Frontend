@@ -1,7 +1,7 @@
-import { View, Image, StyleSheet, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { useRouter, useGlobalSearchParams } from 'expo-router';
-import { useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useGlobalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ViewImage() {
   const router = useRouter();
@@ -22,12 +22,14 @@ export default function ViewImage() {
     );
   }
 
-  const decodedUri = decodeURIComponent(uri);
-
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={80}
+    >
       <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
-        <Ionicons name="close" size={30} color="#fff" />
+        <Ionicons name="close" size={30} color="green" />
       </TouchableOpacity>
       {loading && !error && <ActivityIndicator size="large" color="#00ff00" />}
       {error && (
@@ -40,18 +42,18 @@ export default function ViewImage() {
       )}
       {!error && (
         <Image
-          source={{ uri: decodedUri }}
-          style={styles.image}
+          source={{ uri }}
+          style={[styles.image, { flex: 1 }]}
           resizeMode="contain"
           onLoadEnd={() => setLoading(false)}
           onError={() => {
             setLoading(false);
             setError(true);
-            console.warn("Error loading image:", decodedUri);
+            console.warn("Error loading image:", uri);
           }}
         />
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

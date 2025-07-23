@@ -2,7 +2,6 @@ import { useRouter } from 'expo-router';
 import { useState } from "react";
 
 import {
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -11,10 +10,9 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-  ScrollView,
+  View
 } from "react-native";
-import instagram from "../assets/images/instagram.png";
+import github from "../assets/images/github.png";
 import googleLogo from "../assets/images/google.png";
 
 const LoginScreen = () => {
@@ -159,7 +157,7 @@ if (response.ok) {
           <TouchableOpacity>
             <View style={styles.circle}>
               <Image
-                source={instagram}
+                source={github}
                 style={{ width: 40, height: 40, resizeMode: "contain" }}
               />
             </View>

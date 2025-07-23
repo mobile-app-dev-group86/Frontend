@@ -1,290 +1,520 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { Audio } from 'expo-av';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
+import React, { useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
+  Alert,
+  FlatList,
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
   Modal,
   Platform,
-  Vibration,
-  FlatList,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { Audio } from 'expo-av';
-import { activateKeepAwake, deactivateKeepAwake } from 'expo-keep-awake';
-import MessageBubble from '../components/MessageBubble';
-import MessageInputBar from '../components/MessageInputBar';
-
-const CALL_SOCKET_URL = 'ws://your-backend-url/group-call';
-const RINGTONE_INCOMING = require('../assets/sounds/sound2.mp3');
+import { SafeAreaView } from 'react-native-safe-area-context';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 export default function GroupChatScreen() {
   const router = useRouter();
-  const { groupName, groupImage, groupId, isGroup, callType } = useLocalSearchParams();
-
   const [messages, setMessages] = useState([]);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isCameraOn, setIsCameraOn] = useState(callType === 'video');
-  const [callTimer, setCallTimer] = useState(0);
-  const [showIncomingModal, setShowIncomingModal] = useState(false);
-  const [incomingCaller, setIncomingCaller] = useState(null);
-  const [sound, setSound] = useState(null);
-
-  const ws = useRef(null);
-  const timerRef = useRef(null);
+  const [emojiModalVisible, setEmojiModalVisible] = useState(false);
+  const [selectedMessageId, setSelectedMessageId] = useState(null);
+  const emojiList = ['👍', '❤️', '😂', '😮', '😢', '👏', '🔥', '🎉', '😎', '🤔', '🙏', '🥳', '😡', '💯', '🤩', '😅', '😇', '😏', '😬', '😴', '🤯', '😱', '😜', '😋', '😤', '😈', '👀', '🙌', '🤗', '😃', '😆', '😝', '😳', '😔', '😩', '😢', '😭', '😤', '😡', '🤬', '🤡', '💩', '👻', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾'];
+  const [input, setInput] = useState('');
   const flatListRef = useRef(null);
+  const [recording, setRecording] = useState(null);
+  const [playingSound, setPlayingSound] = useState(null);
+  const [playingUri, setPlayingUri] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [recordingInterval, setRecordingInterval] = useState(null);
 
-  useEffect(() => {
-    // Initialize WebSocket
-    ws.current = new WebSocket(CALL_SOCKET_URL);
-
-    ws.current.onopen = () => {
-      console.log('WebSocket connected');
-      if (groupId) {
-        ws.current.send(JSON.stringify({ type: 'join-group', groupId }));
-      }
-    };
-
-    ws.current.onmessage = async (event) => {
-      const data = JSON.parse(event.data);
-
-      switch (data.type) {
-        case 'INCOMING_GROUP_CALL':
-          setIncomingCaller(data.caller);
-          setShowIncomingModal(true);
-          await playRingtone();
-          if (Platform.OS === 'android') Vibration.vibrate([1000, 500, 1000]);
-          break;
-        case 'message':
-          const updatedMessages = [...messages, data.message];
-          setMessages(updatedMessages);
-          scrollToEnd();
-          break;
-        default:
-          console.warn('Unknown message type:', data.type);
-      }
-    };
-
-    ws.current.onerror = (e) => console.error('WebSocket error:', e.message);
-    ws.current.onclose = () => console.log('WebSocket closed');
-
-    // Keep screen awake during call
-    activateKeepAwake();
-
-    return () => {
-      ws.current?.close();
-      stopRingtone();
-      clearInterval(timerRef.current);
-      deactivateKeepAwake();
-    };
-  }, [messages]);
-
-  const playRingtone = async () => {
-    try {
-      const { sound: newSound } = await Audio.Sound.createAsync(RINGTONE_INCOMING);
-      setSound(newSound);
-      await newSound.setIsLoopingAsync(true);
-      await newSound.playAsync();
-    } catch (error) {
-      console.error('Failed to play ringtone:', error);
-    }
+  const handleDeleteMessage = (id) => {
+    setMessages((prev) => prev.filter((msg) => msg.id !== id));
   };
 
-  const stopRingtone = async () => {
-    if (sound) {
-      await sound.stopAsync();
-      await sound.unloadAsync();
-      setSound(null);
-    }
+  const confirmDeleteMessage = (id) => {
+    Alert.alert(
+      'Delete Message',
+      'Are you sure you want to delete this message?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => handleDeleteMessage(id) },
+      ]
+    );
   };
 
-  const acceptCall = () => {
-    stopRingtone();
-    setShowIncomingModal(false);
-    startCallTimer();
-    ws.current?.send(JSON.stringify({ type: 'ACCEPT_CALL', groupId }));
+  const handleReactToMessage = (id) => {
+    setSelectedMessageId(id);
+    setEmojiModalVisible(true);
   };
 
-  const declineCall = () => {
-    stopRingtone();
-    setShowIncomingModal(false);
-    ws.current?.send(JSON.stringify({ type: 'DECLINE_CALL', groupId }));
-    router.back();
+  const setReaction = (id, emoji) => {
+    setMessages((prev) => prev.map((msg) => {
+      if (msg.id !== id) return msg;
+      let reactions = Array.isArray(msg.reactions) ? [...msg.reactions] : [];
+      reactions.push(emoji);
+      return { ...msg, reactions };
+    }));
+    setEmojiModalVisible(false);
+    setSelectedMessageId(null);
   };
 
-  const startCallTimer = () => {
-    timerRef.current = setInterval(() => {
-      setCallTimer((prev) => prev + 1);
-    }, 1000);
-  };
-
-  const endCall = () => {
-    clearInterval(timerRef.current);
-    setCallTimer(0);
-    ws.current?.send(JSON.stringify({ type: 'END_CALL', groupId }));
-    router.back();
-  };
-
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-  };
-
-  const toggleCamera = () => {
-    setIsCameraOn(!isCameraOn);
-  };
-
-  const scrollToEnd = () => {
+  const sendMessage = () => {
+    if (!input.trim()) return;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        text: input,
+        avatar: 'https://i.imgur.com/8wD9N2C.png', // Replace with user avatar if needed
+      },
+    ]);
+    setInput('');
     setTimeout(() => {
       flatListRef.current?.scrollToEnd({ animated: true });
     }, 100);
   };
 
-  const sendMessage = (text) => {
-    if (text.trim()) {
-      const msg = { sender: 'me', text, id: Date.now().toString() };
-      ws.current?.send(JSON.stringify({ type: 'message', message: msg }));
-      const updatedMessages = [...messages, msg];
-      setMessages(updatedMessages);
-      scrollToEnd();
+  const startTimer = () => {
+    setRecordingDuration(0);
+    const interval = setInterval(() => {
+      setRecordingDuration((prev) => prev + 1);
+    }, 1000);
+    setRecordingInterval(interval);
+  };
+
+  const stopTimer = () => {
+    if (recordingInterval) {
+      clearInterval(recordingInterval);
+      setRecordingInterval(null);
     }
   };
 
+  const startRecording = async () => {
+    try {
+      await Audio.requestPermissionsAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      setRecording(recording);
+      startTimer();
+    } catch (err) {
+      Alert.alert('Error', 'Could not start recording.');
+    }
+  };
+
+  const stopRecording = async () => {
+    try {
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      setRecording(null);
+      stopTimer();
+      if (uri) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            audio: uri,
+            avatar: 'https://i.imgur.com/8wD9N2C.png',
+          },
+        ]);
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Could not stop recording.');
+    }
+  };
+
+  const handleMicPressIn = async () => {
+    if (!recording) {
+      await startRecording();
+    }
+  };
+
+  const handleMicPressOut = async () => {
+    if (recording) {
+      await stopRecording();
+    }
+  };
+
+  const playAudio = async (uri) => {
+    try {
+      if (playingSound && playingUri === uri) {
+        // Pause if already playing this audio
+        await playingSound.pauseAsync();
+        setIsPlaying(false);
+        return;
+      }
+      if (playingSound) {
+        await playingSound.stopAsync();
+        await playingSound.unloadAsync();
+        setPlayingSound(null);
+        setPlayingUri(null);
+        setIsPlaying(false);
+      }
+      const { sound } = await Audio.Sound.createAsync({ uri });
+      setPlayingSound(sound);
+      setPlayingUri(uri);
+      setIsPlaying(true);
+      await sound.playAsync();
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isPlaying) {
+          setIsPlaying(true);
+        } else if (status.didJustFinish) {
+          sound.unloadAsync();
+          setPlayingSound(null);
+          setPlayingUri(null);
+          setIsPlaying(false);
+        } else if (status.isLoaded && !status.isPlaying) {
+          setIsPlaying(false);
+        }
+      });
+    } catch (err) {
+      Alert.alert('Error', 'Could not play audio.');
+    }
+  };
+
+  const resumeAudio = async () => {
+    if (playingSound) {
+      await playingSound.playAsync();
+      setIsPlaying(true);
+    }
+  };
+
+  const handlePickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.7,
+      });
+      if (!result.canceled && result.assets?.length > 0) {
+        const originalUri = result.assets[0].uri;
+        const fileName = originalUri.split('/').pop();
+        const newPath = FileSystem.cacheDirectory + fileName;
+        await FileSystem.copyAsync({ from: originalUri, to: newPath });
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            image: newPath,
+            avatar: 'https://i.imgur.com/8wD9N2C.png',
+          },
+        ]);
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Could not pick image.');
+    }
+  };
+
+  const handlePickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: '*/*',
+        copyToCacheDirectory: true,
+      });
+      if (result.type === 'success') {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            document: result.uri,
+            documentName: result.name,
+            avatar: 'https://i.imgur.com/8wD9N2C.png',
+          },
+        ]);
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Could not pick document.');
+    }
+  };
+
+  const handleViewImage = (uri) => {
+    router.push({ pathname: '/viewImage', params: { uri } });
+  };
+
+  const renderMessage = ({ item }) => (
+    <TouchableOpacity
+      onLongPress={() => confirmDeleteMessage(item.id)}
+      onPress={() => handleReactToMessage(item.id)}
+      activeOpacity={0.8}
+    >
+      <View style={styles.messageContainer}>
+        <Image source={{ uri: item.avatar }} style={styles.avatar} />
+        <View style={styles.bubble}>
+          {item.text && <Text style={styles.messageText}>{item.text}</Text>}
+          {item.image && (
+            <TouchableOpacity onPress={() => handleViewImage(item.image)}>
+              <Image source={{ uri: item.image }} style={{ width: 200, height: 200, borderRadius: 12, marginTop: 6 }} resizeMode="cover" />
+            </TouchableOpacity>
+          )}
+          {item.document && (
+            <TouchableOpacity onPress={() => Alert.alert('Open Document', item.documentName)} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+              <Ionicons name="document" size={20} color="#555" />
+              <Text style={{ marginLeft: 6, color: '#555', textDecorationLine: 'underline' }}>{item.documentName}</Text>
+            </TouchableOpacity>
+          )}
+          {item.audio && (
+            <TouchableOpacity
+              onPress={async (e) => {
+                e.stopPropagation();
+                if (playingUri === item.audio && isPlaying) {
+                  await playAudio(item.audio); // pause
+                } else if (playingUri === item.audio && !isPlaying) {
+                  await resumeAudio();
+                } else {
+                  await playAudio(item.audio);
+                }
+              }}
+              style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}
+            >
+              <Ionicons name={playingUri === item.audio && isPlaying ? "pause" : "play"} size={20} color="green" />
+              <Text style={{ marginLeft: 6, color: 'green' }}>{playingUri === item.audio && isPlaying ? 'Pause' : 'Play Audio'}</Text>
+            </TouchableOpacity>
+          )}
+          {Array.isArray(item.reactions) && item.reactions.length > 0 && (
+            <View style={{ flexDirection: 'row', marginTop: 4 }}>
+              {Object.entries(item.reactions.reduce((acc, emoji) => {
+                acc[emoji] = (acc[emoji] || 0) + 1;
+                return acc;
+              }, {})).map(([emoji, count], idx) => (
+                <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
+                  <Text style={{ fontSize: 16 }}>{emoji}</Text>
+                  {count > 1 && <Text style={{ fontSize: 12, marginLeft: 2 }}>{count}</Text>}
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{groupName || 'Group Chat'}</Text>
-        <Text style={styles.timer}>{formatTimer(callTimer)}</Text>
-        <Image
-          source={{ uri: groupImage || 'https://placehold.co/100x100' }}
-          style={styles.avatar}
-        />
-      </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={0}
+        >
+          <View style={styles.header}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={22} color="black" />
+            </TouchableOpacity>
+            <View style={styles.headerProfile}>
+              <Image
+                source={{ uri: 'https://i.imgur.com/8wD9N2C.png' }}
+                style={styles.headerAvatar}
+              />
+              <View style={{ marginLeft: 10 }}>
+                <Text style={styles.title}>Group Name</Text>
+              </View>
+            </View>
+            <View style={styles.headerIcons}>
+              <TouchableOpacity>
+                <Ionicons name="call" size={22} color="green" />
+              </TouchableOpacity>
+              <TouchableOpacity style={{ marginLeft: 10 }}>
+                <Ionicons name="videocam" size={22} color="green" />
+              </TouchableOpacity>
+            </View>
+          </View>
 
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        renderItem={({ item }) => (
-          <MessageBubble message={item} isMe={item.sender === 'me'} />
-        )}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 10 }}
-        onContentSizeChange={scrollToEnd}
-        onLayout={scrollToEnd}
-      />
-
-      <MessageInputBar onSend={sendMessage} />
-
-      <View style={styles.controls}>
-        <TouchableOpacity onPress={toggleMute} style={styles.button}>
-          <Ionicons name={isMuted ? 'mic-off' : 'mic'} size={28} color="#fff" />
-        </TouchableOpacity>
-        {callType === 'video' && (
-          <TouchableOpacity onPress={toggleCamera} style={styles.button}>
-            <Ionicons name={isCameraOn ? 'videocam' : 'videocam-off'} size={28} color="#fff" />
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity onPress={() => router.push('/messages')} style={styles.button}>
-          <Ionicons name="chatbubble" size={28} color="#fff" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={endCall} style={[styles.button, styles.endButton]}>
-          <Ionicons name="call" size={28} color="#fff" />
-        </TouchableOpacity>
-      </View>
-
-      <Modal visible={showIncomingModal} transparent animationType="slide">
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalText}>
-            {incomingCaller?.name || 'Someone'} is calling...
-          </Text>
-          <Image
-            source={{ uri: incomingCaller?.profilePicture || 'https://placehold.co/100x100' }}
-            style={styles.modalAvatar}
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item) => item.id}
+            renderItem={renderMessage}
+            contentContainerStyle={{ padding: 10 }}
+            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            keyboardShouldPersistTaps="handled"
           />
-          <View style={styles.modalButtons}>
-            <TouchableOpacity onPress={declineCall} style={[styles.button, styles.decline]}>
-              <Ionicons name="call" size={28} color="#fff" />
+
+          <View style={styles.footer}>
+            {input.length === 0 && (
+              <TouchableOpacity onPress={handlePickImage} style={{ marginRight: 6 }}>
+                <Ionicons name="image" size={24} color="black" />
+              </TouchableOpacity>
+            )}
+            {input.length === 0 && (
+              <TouchableOpacity onPress={handlePickDocument} style={{ marginRight: 6 }}>
+                <Ionicons name="document" size={24} color="black" />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={{ marginRight: 6 }}>
+              <FontAwesome name="gamepad" size={24} color="black" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={acceptCall} style={[styles.button, styles.accept]}>
-              <Ionicons name="call" size={28} color="#fff" />
+            <TextInput
+              style={styles.input}
+              value={input}
+              onChangeText={setInput}
+              placeholder="Message"
+            />
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              {recording && (
+                <Text style={{ color: 'red', fontWeight: 'bold', marginBottom: 2 }}>
+                  {`${Math.floor(recordingDuration / 60).toString().padStart(2, '0')}:${(recordingDuration % 60).toString().padStart(2, '0')}`}
+                </Text>
+              )}
+              <TouchableOpacity
+                style={[styles.micButton, recording && { transform: [{ scale: 1.3 }], backgroundColor: '#ffeaea' }]}
+                onPressIn={handleMicPressIn}
+                onPressOut={handleMicPressOut}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="mic" size={24} color={recording ? "red" : "black"} />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
+              <Ionicons name="send" size={24} color="green" />
             </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
+
+      {/* Emoji Picker Modal */}
+      <Modal
+        visible={emojiModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setEmojiModalVisible(false)}
+      >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+          <View style={{ backgroundColor: 'white', borderRadius: 16, padding: 20, maxHeight: 120, position: 'relative' }}>
+            <TouchableOpacity
+              onPress={() => setEmojiModalVisible(false)}
+              style={{ position: 'absolute', top: 4, right: 4, zIndex: 1 }}
+            >
+              <Text style={{ fontSize: 32, color: '#888' }}>×</Text>
+            </TouchableOpacity>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {emojiList.map((emoji, idx) => (
+                <Pressable key={idx} onPress={() => setReaction(selectedMessageId, emoji)}>
+                  <Text style={{ fontSize: 36, marginHorizontal: 8 }}>{emoji}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
-
-const formatTimer = (seconds) => {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#e0ffe0',
+    backgroundColor: 'white',
   },
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
-    backgroundColor: '#c8facc',
+    paddingHorizontal: 15,
+    paddingTop: 30,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    backgroundColor: '#f8f8f8',
+    justifyContent: 'space-between',
+  },
+  headerProfile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginLeft: 10,
+  },
+  headerAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#ccc',
+  },
+  headerCenter: {
+    alignItems: 'center',
   },
   title: {
-    fontSize: 26,
-    color: '#1B5E20',
-    fontWeight: 'bold',
-  },
-  timer: {
     fontSize: 18,
-    color: '#1B5E20',
-    marginVertical: 5,
+    fontWeight: '600',
+    color: '#000',
+  },
+  subtitle: {
+    fontSize: 12,
+    color: 'gray',
+  },
+  headerIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  messageContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
   },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginVertical: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8,
   },
-  controls: {
+  bubble: {
+    backgroundColor: '#f2f2f2',
+    padding: 10,
+    borderRadius: 10,
+    maxWidth: '80%',
+  },
+  messageText: {
+    fontSize: 15,
+    color: '#000',
+  },
+  footer: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    paddingVertical: 10,
-    backgroundColor: '#4CAF50',
-  },
-  button: {
-    padding: 15,
-  },
-  endButton: {
-    backgroundColor: '#E53935',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.95)',
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    backgroundColor: 'white',
   },
-  modalText: {
-    fontSize: 20,
-    marginBottom: 15,
-    color: '#1B5E20',
+  input: {
+    flex: 1,
+    backgroundColor: '#f1f1f1',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    marginHorizontal: 10,
+    fontSize: 15,
   },
-  modalAvatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 25,
+  sendButton: {
+    padding: 6,
   },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 30,
-  },
-  decline: {
-    backgroundColor: '#E53935',
-  },
-  accept: {
-    backgroundColor: '#4CAF50',
+  micButton: {
+    padding: 6,
+    marginRight: 4,
   },
 });

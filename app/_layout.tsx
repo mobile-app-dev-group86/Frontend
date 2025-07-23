@@ -1,8 +1,8 @@
-import React from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import React from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -46,6 +46,7 @@ export default function RootLayout() {
           <Stack.Screen name="CalendarScreen" options={{ headerShown: false }} />
           <Stack.Screen name="search" options={{ headerShown: false }} />
           <Stack.Screen name="inviteFriend" options={{ headerShown: false }} />
+          <Stack.Screen name="viewImage" options={{ headerShown: false }} />
           <Stack.Screen name="(modal)" options={{ presentation: 'modal' }} />
           <Stack.Screen name="not-found" options={{ title: 'Oops!' }} />
         </Stack>
