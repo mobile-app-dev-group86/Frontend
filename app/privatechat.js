@@ -25,6 +25,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import GamesModal from './components/GamesModal';
 
 export default function ChatScreen() {
   const router = useRouter();
@@ -40,6 +41,7 @@ export default function ChatScreen() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [recordingInterval, setRecordingInterval] = useState(null);
+  const [showGamesModal, setShowGamesModal] = useState(false);
 
   const handleDeleteMessage = (id) => {
     setMessages((prev) => prev.filter((msg) => msg.id !== id));
@@ -340,6 +342,9 @@ export default function ChatScreen() {
               <TouchableOpacity style={{ marginLeft: 10 }}>
                 <Ionicons name="videocam" size={22} color="green" />
               </TouchableOpacity>
+              <TouchableOpacity style={{ marginLeft: 10 }} onPress={() => setShowGamesModal(true)}>
+                <FontAwesome name="gamepad" size={24} color="green" />
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -419,6 +424,8 @@ export default function ChatScreen() {
           </View>
         </View>
       </Modal>
+
+      <GamesModal visible={showGamesModal} onClose={() => setShowGamesModal(false)} />
     </SafeAreaView>
   );
 }

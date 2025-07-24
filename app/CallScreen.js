@@ -1,147 +1,203 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
-  StyleSheet,
   Image,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  Platform,
+  SafeAreaView,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useRouter } from 'expo-router';
 import { Audio } from 'expo-av';
 
-const RINGTONE_OUTGOING = require('../assets/sounds/sound1.mp3');
+const OUTGOING_SOUND = require('../assets/sounds/sound1.mp3');
 
-export default function CallScreen() {
-  const router = useRouter();
-  const { userId, profile, type } = useLocalSearchParams();
-  const [isMuted, setIsMuted] = useState(false);
-  const [isCameraOn, setIsCameraOn] = useState(type === 'video');
-  const [callTimer, setCallTimer] = useState(0);
+export default function CallScreen({
+  visible,
+  callee,
+  onEndCall,
+  onAnswered,
+  callAnswered = false,
+  type = 'voice', // 'voice' or 'video'
+}) {
   const [sound, setSound] = useState(null);
-  const timerRef = useRef(null);
+  const router = useRouter();
 
   useEffect(() => {
-    playRingtone();
-
+    let isMounted = true;
+    if (visible && !callAnswered) {
+      playOutgoingCallSound();
+    }
     return () => {
-      stopRingtone();
-      clearInterval(timerRef.current);
+      isMounted = false;
+      stopOutgoingCallSound();
     };
-  }, []);
+    // eslint-disable-next-line
+  }, [visible, callAnswered]);
 
-  const playRingtone = async () => {
+  useEffect(() => {
+    if (callAnswered) {
+      stopOutgoingCallSound();
+      if (onAnswered) onAnswered();
+    }
+    // eslint-disable-next-line
+  }, [callAnswered]);
+
+  const playOutgoingCallSound = async () => {
     try {
-      const { sound: newSound } = await Audio.Sound.createAsync(RINGTONE_OUTGOING);
+      const { sound: newSound } = await Audio.Sound.createAsync(OUTGOING_SOUND);
       setSound(newSound);
+      await newSound.setIsLoopingAsync(true);
+      await newSound.setVolumeAsync(0.8);
       await newSound.playAsync();
     } catch (error) {
-      console.error('Failed to play ringtone:', error);
+      console.error('Failed to play outgoing call sound:', error);
     }
   };
 
-  const stopRingtone = async () => {
+  const stopOutgoingCallSound = async () => {
     if (sound) {
-      await sound.stopAsync();
-      await sound.unloadAsync();
-      setSound(null);
+      try {
+        await sound.stopAsync();
+        await sound.unloadAsync();
+        setSound(null);
+      } catch (error) {
+        // ignore
+      }
     }
   };
 
-  const startCallTimer = () => {
-    timerRef.current = setInterval(() => {
-      setCallTimer((prev) => prev + 1);
-    }, 1000);
-  };
-
-  const endCall = () => {
-    clearInterval(timerRef.current);
-    setCallTimer(0);
+  const handleEndCall = async () => {
+    await stopOutgoingCallSound();
+    if (onEndCall) onEndCall();
     router.back();
   };
 
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-  };
-
-  const toggleCamera = () => {
-    setIsCameraOn(!isCameraOn);
-  };
-
-  const formatTimer = () => {
-    const mins = Math.floor(callTimer / 60);
-    const secs = callTimer % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  };
+  if (!visible) return null;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.profileContainer}>
-        <Image
-          source={{ uri: profile?.image || 'https://placehold.co/100x100' }}
-          style={styles.profileImage}
-        />
-        <Text style={styles.name}>{profile?.name || 'User'}</Text>
-        <Text style={styles.timer}>{formatTimer()}</Text>
-      </View>
-
-      <View style={styles.controls}>
-        <TouchableOpacity onPress={toggleMute} style={styles.button}>
-          <Ionicons name={isMuted ? 'mic-off' : 'mic'} size={28} color="#fff" />
-        </TouchableOpacity>
-        {type === 'video' && (
-          <TouchableOpacity onPress={toggleCamera} style={styles.button}>
-            <Ionicons name={isCameraOn ? 'videocam' : 'videocam-off'} size={28} color="#fff" />
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity onPress={endCall} style={[styles.button, styles.endButton]}>
-          <Ionicons name="call" size={28} color="#fff" />
-        </TouchableOpacity>
-      </View>
-    </View>
+    <Modal visible={visible} animationType="slide" transparent={true}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          {/* Back Arrow */}
+          <View style={styles.backButton}>
+            <TouchableOpacity onPress={handleEndCall} style={styles.backButtonCircle}>
+              <Ionicons name="arrow-back" size={30} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.profileContainer}>
+            {type === 'video' ? (
+              <View style={styles.videoPlaceholderBox}>
+                <Text style={styles.videoPlaceholder}>Video</Text>
+              </View>
+            ) : (
+              <View style={styles.profileCircle}>
+                <Image
+                  source={callee?.image ? { uri: callee.image } : require('../assets/images/default-avatar.jpeg')}
+                  style={styles.profileImage}
+                />
+              </View>
+            )}
+            <Text style={styles.name}>{callee?.name || 'User'}</Text>
+            <Text style={styles.incomingText}>Calling...</Text>
+          </View>
+          {/* End Call Button */}
+          <View style={styles.endCallRow}>
+            <TouchableOpacity onPress={handleEndCall} style={[styles.button, styles.endButton]}>
+              <Ionicons name="call" size={28} color="white" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#e0ffe0',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
   },
   profileContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 60,
+  },
+  profileCircle: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: '#E0E0E0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    marginBottom: 15,
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+  },
+  videoPlaceholderBox: {
+    width: 140,
+    height: 140,
+    borderRadius: 20,
+    backgroundColor: '#222',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  videoPlaceholder: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   name: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
-    color: '#1B5E20',
+    color: 'white',
   },
-  timer: {
+  incomingText: {
     fontSize: 18,
-    color: '#1B5E20',
+    color: 'white',
     marginTop: 5,
+    fontStyle: 'italic',
   },
-  controls: {
+  endCallRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 20,
-    marginBottom: 20,
+    alignItems: 'center',
+    marginTop: 20,
   },
   button: {
-    backgroundColor: '#4CAF50',
-    padding: 15,
+    backgroundColor: 'green',
+    padding: 16,
     borderRadius: 50,
+    margin: 10,
   },
   endButton: {
     backgroundColor: '#E53935',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    zIndex: 10,
+  },
+  backButtonCircle: {
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 20,
+    padding: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

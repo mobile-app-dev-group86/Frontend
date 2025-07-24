@@ -88,9 +88,7 @@ export default function IncomingVoiceCallScreen({
         });
       }
       const newSound = new Audio.Sound();
-      const soundFile = incoming
-        ? require('../assets/sounds/sound1.mp3')
-        : require('../assets/sounds/sound2.mp3');
+      const soundFile = require('../assets/sounds/sound2.mp3');
       await newSound.loadAsync(soundFile);
       await newSound.setIsLoopingAsync(true);
       await newSound.setVolumeAsync(0.8);

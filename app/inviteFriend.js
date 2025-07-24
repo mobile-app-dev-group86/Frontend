@@ -9,9 +9,9 @@ import {
   Linking,
   Alert,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const shareOptions = [
   {
@@ -80,6 +80,13 @@ export default function InviteFriendScreen() {
 
   return (
     <View style={styles.container}>
+      {/* New pill buttons */}
+      <TouchableOpacity style={styles.pillButtonGreen} onPress={() => router.push('/Notifications')}>
+        <Text style={styles.pillButtonGreenText}>Notifications</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.pillButtonNeutral} onPress={() => router.push('/createChannel')}>
+        <Text style={styles.pillButtonNeutralText}>Create Channel</Text>
+      </TouchableOpacity>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -230,5 +237,71 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 13,
     fontWeight: "bold",
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 10,
+    gap: 12,
+  },
+  notificationsButton: {
+    backgroundColor: 'green',
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 8,
+  },
+  notificationsButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  createChannelButton: {
+    backgroundColor: '#f2f2f2',
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 8,
+  },
+  createChannelButtonText: {
+    color: 'green',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  pillButtonGreen: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'green',
+    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    marginBottom: 14,
+    width: '100%',
+    marginTop: 10,
+  },
+  pillButtonGreenText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  pillButtonNeutral: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f2f2f2',
+    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    width: '100%',
+  },
+  pillButtonNeutralText: {
+    color: 'green',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  pillArrow: {
+    marginLeft: 10,
   },
 });
