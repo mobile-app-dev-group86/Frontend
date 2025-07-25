@@ -4,7 +4,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -24,7 +24,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import GamesModal from './components/GamesModal';
+import GamesModal from '../components/GamesModal';
 
 export default function GroupChatScreen() {
   const router = useRouter();
@@ -372,9 +372,7 @@ export default function GroupChatScreen() {
                 <Ionicons name="document" size={24} color="black" />
               </TouchableOpacity>
             )}
-            <TouchableOpacity style={{ marginRight: 6 }}>
-              <FontAwesome name="gamepad" size={24} color="black" />
-            </TouchableOpacity>
+            
             <TextInput
               style={styles.input}
               value={input}

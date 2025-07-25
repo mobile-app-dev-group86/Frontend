@@ -58,9 +58,11 @@ export default function MessageScreen() {
       <Text style={styles.noMessagesText}>
         Invite your friends to play games, listen to music together, and more.
       </Text>
-      <TouchableOpacity style={styles.addButton}>
-        <Text style={styles.addButtonText}>Add Friends</Text>
-      </TouchableOpacity>
+       <TouchableOpacity
+       style={styles.addButton}
+      onPress={() => router.push("addFriends")} >
+     <Text style={styles.addButtonText}>Add Friends</Text>
+    </TouchableOpacity>
     </View>
   );
 
@@ -142,7 +144,7 @@ export default function MessageScreen() {
             style={styles.searchInput}
             placeholderTextColor="#777"
           />
-          <TouchableOpacity style={styles.addFriendButton}>
+          <TouchableOpacity style={styles.addFriendButton} onPress={() => router.push("addFriends")}>
             <Ionicons name="person-add" size={20} color="#000" />
             <Text style={styles.addFriendText}>Add Friends</Text>
           </TouchableOpacity>
