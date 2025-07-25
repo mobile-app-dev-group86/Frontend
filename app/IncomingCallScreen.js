@@ -228,7 +228,7 @@ export default function IncomingCallScreen({
                       <MaterialCommunityIcons name={videoOn ? 'video' : 'video-off'} size={26} color="white" />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={handleToggleCamera} style={styles.compactButtonLarge}>
-                      <MaterialCommunityIcons name={cameraType === 'front' ? 'camera-reverse' : 'camera'} size={26} color="white" />
+                      <MaterialCommunityIcons name={cameraType === 'front' ? 'camera-switch' : 'camera'} size={26} color="white" />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={handleSpeaker} style={[styles.compactButtonLarge, speakerOn && styles.activeButton]}>
                       <MaterialCommunityIcons name="volume-high" size={26} color="white" />
