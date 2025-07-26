@@ -29,7 +29,7 @@ export default function SettingsScreen() {
         {
           text: "Yes",
           onPress: () => {
-            router.replace("/loginScreen"); // Replace with your actual login route
+            router.replace("/loginScreen"); 
           },
           style: "destructive",
         },
@@ -47,46 +47,46 @@ export default function SettingsScreen() {
     {
       key: "2",
       label: "Devices",
-      onPress: () => router.push("/settings/devices"),
+      onPress: () => router.push("/devices"),
     },
     
     {
       key: "3",
-      label: "Channel settings screen",
-      onPress: () => router.push("/settings/channelSettings"),
+      label: "Chat settings",
+      onPress: () => router.push("/ChatSetting"),
     },
     {
       key: "4",
       label: "Privacy and safety",
-      onPress: () => router.push("/settings/privacySafety"),
+      onPress: () => router.push("/DataPrivacy"),
     },
+    // {
+    //   key: "5",
+    //   label: "Connections",
+    //   onPress: () => router.push("/settings"),
+    // },
+    // {
+    //   key: "6",
+    //   label: "Accessibility",
+    //   onPress: () => router.push("/settings/accessibility"),
+    // },
     {
       key: "5",
-      label: "Connections",
-      onPress: () => router.push("/settings/connections"),
+      label: "Voice settings",
+      onPress: () => router.push("/VoiceSetting"),
     },
     {
       key: "6",
-      label: "Accessibility",
-      onPress: () => router.push("/settings/accessibility"),
+      label: "Activity feed",
+      onPress: () => router.push("/ActivityScreen"),
     },
     {
       key: "7",
-      label: "Authorized Apps",
-      onPress: () => router.push("/settings/authorizedApps"),
+      label: "Notification settings",
+      onPress: () => router.push("/notificationSetting"),
     },
     {
       key: "8",
-      label: "Activity feed",
-      onPress: () => router.push("/settings/activityFeed"),
-    },
-    {
-      key: "9",
-      label: "Server settings",
-      onPress: () => router.push("/settings/serverSettings"),
-    },
-    {
-      key: "10",
       label: "Log Out",
       isLogout: true,
       onPress: handleLogout,

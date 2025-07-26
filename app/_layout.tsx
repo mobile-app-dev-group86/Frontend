@@ -50,6 +50,12 @@ export default function RootLayout() {
           <Stack.Screen name="IncomingCallScreen" options={{ headerShown: false }} />
           <Stack.Screen name="incomingvoicecall" options={{ headerShown: false }} />
           <Stack.Screen name="GameWebView" options={{ headerShown: false }} />
+          <Stack.Screen name="ChatSetting" options={{ headerShown: false }} />
+          <Stack.Screen name="notificationSetting" options={{ headerShown: false }} />
+          <Stack.Screen name="devices" options={{ headerShown: false }} />
+          <Stack.Screen name="ActivityScreen" options={{ headerShown: false }} />
+          <Stack.Screen name="DataPrivacy" options={{ headerShown: false }} />
+          <Stack.Screen name="VoiceSetting" options={{ headerShown: false }} />
           <Stack.Screen name="(modal)" options={{ presentation: 'modal' }} />
           <Stack.Screen name="not-found" options={{ title: 'Oops!' }} />
         </Stack>
