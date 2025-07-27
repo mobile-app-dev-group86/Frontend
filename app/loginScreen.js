@@ -173,34 +173,7 @@ if (response.ok) {
 
         
         
-        <View style={{ marginBottom: 10 }}>
-          <TouchableOpacity onPress={() => router.push('/homeScreen')}>
-            <Text style={{ color: 'green', textAlign: 'right' }}>home</Text>
-          </TouchableOpacity>
-          </View>
         
-
-        <View style={{ marginBottom: 10 }}>
-          <TouchableOpacity onPress={() => router.push('/privatechat')}>
-            <Text style={{ color: 'green', textAlign: 'right' }}>privatechat</Text>
-          </TouchableOpacity>
-        </View>
-         <View style={{ marginBottom: 10 }}>
-          <TouchableOpacity onPress={() => router.push('/groupchat')}>
-            <Text style={{ color: 'green', textAlign: 'right' }}>groupchat</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={{ marginBottom: 10 }}>
-          <TouchableOpacity onPress={() => router.push('/IncomingCallScreen')}>
-            <Text style={{ color: 'green', textAlign: 'right' }}>incomingCallScreen</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={{ marginBottom: 10 }}>
-          <TouchableOpacity onPress={() => router.push('/incomingvoicecall')}>
-            <Text style={{ color: 'green', textAlign: 'right' }}>incomingvoiceScreen</Text>
-          </TouchableOpacity>
-        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

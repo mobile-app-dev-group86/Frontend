@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {
   View,
   Text,
@@ -54,6 +55,9 @@ export default function CreateChannelScreen() {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                <Ionicons name="arrow-back" size={24} color="#000" />
+            </TouchableOpacity>
       <Text style={styles.heading}>Create a Channel</Text>
 
       <TextInput
@@ -124,6 +128,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "600",
     marginBottom: 20,
+    paddingTop: 20,
   },
   input: {
     height: 48,
@@ -147,8 +152,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   activeType: {
-    backgroundColor: "#4CAF50",
-    borderColor: "#4CAF50",
+    backgroundColor: "green",
+    borderColor: "green",
   },
   typeText: {
     color: "#555",
@@ -158,7 +163,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   createButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "green",
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: "center",

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from '@react-navigation/native';
 
 const ServerDetailsScreen = ({ serverId }) => {
   const [showTextChannels, setShowTextChannels] = useState(true);
@@ -18,22 +19,28 @@ const ServerDetailsScreen = ({ serverId }) => {
   const router = useRouter();
   
 
-  useEffect(() => {
-    const fetchServerDetails = async () => {
-      try {
-        const response = await fetch(`http://YOUR_BACKEND_URL/api/servers/${serverId}`);
-        const data = await response.json();
-        setServerData(data);
-      } catch (error) {
-        console.error("Error fetching server details:", error.message);
-        
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchServerDetails();
+  const fetchServerDetails = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`http://YOUR_BACKEND_URL/api/servers/${serverId}`);
+      const data = await response.json();
+      setServerData(data);
+    } catch (error) {
+      console.error("Error fetching server details:", error.message);
+    } finally {
+      setLoading(false);
+    }
   }, [serverId]);
+
+  useEffect(() => {
+    fetchServerDetails();
+  }, [fetchServerDetails]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchServerDetails();
+    }, [fetchServerDetails])
+  );
 
   if (loading) {
     return (
@@ -78,6 +85,14 @@ const ServerDetailsScreen = ({ serverId }) => {
             <Ionicons name="calendar-outline" size={24} color="green" />
           </TouchableOpacity>
         </View>
+
+        {/* Create Channel Button */}
+        <TouchableOpacity
+          style={styles.createChannelButton}
+          onPress={() => router.push("/createChannel")}
+        >
+          <Text style={styles.createChannelButtonText}>Create Channel</Text>
+        </TouchableOpacity>
 
         {/* Text Channels */}
         <TouchableOpacity
@@ -216,5 +231,24 @@ const styles = StyleSheet.create({
     color: "#999",
     fontStyle: "italic",
     fontSize: 13,
+  },
+  createChannelButton: {
+    backgroundColor: 'green',
+    paddingVertical: 12,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginBottom: 16,
+    marginTop: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  createChannelButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    letterSpacing: 1,
   },
 });
