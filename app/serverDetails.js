@@ -113,7 +113,18 @@ const ServerDetailsScreen = ({ serverId }) => {
         {showTextChannels &&
           (textChannels.length > 0 ? (
             textChannels.map((channel) => (
-              <TouchableOpacity key={channel.id} style={styles.channelItem}>
+              <TouchableOpacity
+                key={channel.id}
+                style={styles.channelItem}
+                onPress={() => router.push({
+                  pathname: '/groupchat',
+                  params: {
+                    channelId: channel.id,
+                    channelName: channel.name,
+                    channelInfo: JSON.stringify(channel),
+                  },
+                })}
+              >
                 <Ionicons name="chatbox-outline" size={18} color="#000" />
                 <Text style={styles.channelName}>{channel.name}</Text>
               </TouchableOpacity>
@@ -141,7 +152,18 @@ const ServerDetailsScreen = ({ serverId }) => {
         {showVoiceChannels &&
           (voiceChannels.length > 0 ? (
             voiceChannels.map((channel) => (
-              <TouchableOpacity key={channel.id} style={styles.channelItem}>
+              <TouchableOpacity
+                key={channel.id}
+                style={styles.channelItem}
+                onPress={() => router.push({
+                  pathname: '/GroupCallScreen',
+                  params: {
+                    channelId: channel.id,
+                    channelName: channel.name,
+                    channelInfo: JSON.stringify(channel),
+                  },
+                })}
+              >
                 <Ionicons name="mic-outline" size={18} color="#000" />
                 <Text style={styles.channelName}>{channel.name}</Text>
               </TouchableOpacity>

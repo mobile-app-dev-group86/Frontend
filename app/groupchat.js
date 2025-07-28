@@ -3,7 +3,7 @@ import { Audio } from 'expo-av';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   Alert,
@@ -27,6 +27,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import GamesModal from '../components/GamesModal';
 
 export default function GroupChatScreen() {
+  const { channelName } = useLocalSearchParams();
   const router = useRouter();
   const [messages, setMessages] = useState([]);
   const [emojiModalVisible, setEmojiModalVisible] = useState(false);
@@ -329,15 +330,21 @@ export default function GroupChatScreen() {
             >
               <Ionicons name="arrow-back" size={22} color="black" />
             </TouchableOpacity>
-            <View style={styles.headerProfile}>
-              <Image
-                source={{ uri: 'https://i.imgur.com/8wD9N2C.png' }}
-                style={styles.headerAvatar}
-              />
+            {channelName ? (
               <View style={{ marginLeft: 10 }}>
-                <Text style={styles.title}>Group Name</Text>
+                <Text style={styles.title}>{channelName}</Text>
               </View>
-            </View>
+            ) : (
+              <View style={styles.headerProfile}>
+                <Image
+                  source={{ uri: 'https://i.imgur.com/8wD9N2C.png' }}
+                  style={styles.headerAvatar}
+                />
+                <View style={{ marginLeft: 10 }}>
+                  <Text style={styles.title}>Group Name</Text>
+                </View>
+              </View>
+            )}
             <View style={styles.headerIcons}>
               <TouchableOpacity>
                 <Ionicons name="call" size={22} color="green" />
