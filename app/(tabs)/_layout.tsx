@@ -19,16 +19,21 @@ export default function TabLayout() {
         headerShown: false,
         
         tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
+        // tabBarBackground: TabBarBackground,
         
         tabBarStyle: Platform.select({
           ios: {
-            position: 'absolute',
-            backgroundColor: 'lightgreen',
-          },
-          default: {
-            backgroundColor: 'lightgreen',
-          },
+    position: 'absolute',
+    backgroundColor: '#72FF85',
+    borderTopWidth: 0,
+    shadowColor: 'transparent',
+  },
+  android: {
+    backgroundColor: '#72FF85',
+    elevation: 0,
+    borderTopWidth: 0,
+    
+  },
         }),
       }}
     >

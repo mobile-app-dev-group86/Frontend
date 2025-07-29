@@ -138,10 +138,10 @@ export default function HomeScreen() {
             <ServerDetailsScreen serverId={selectedServer.id} />
           ) : (
             <>
-              <Text style={{ fontSize: 40 }}>Servers</Text>
+              <Text style={{ fontSize: 30 }}>Servers</Text>
               <Image source={homeimage} style={{ width: 200, height: 200, marginTop: 20 }} />
               <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontSize: 25, color: '#2C2C2C', textAlign: 'center' }}>
+                <Text style={{ fontSize: 20, color: '#2C2C2C', textAlign: 'center' }}>
                   {'Ready For a \nnext-level group \nchat?'}
                 </Text>
               </View>
@@ -193,12 +193,12 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#72FF85',
     flexDirection: 'row',
   },
   sidebar: {
     width: 70,
-    backgroundColor: '#50C878',
+    backgroundColor: '#72FF85',
     alignItems: 'center',
   },
   fixedTop: {
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#50C878',
+    backgroundColor: 'white',
     marginBottom: 20,
     justifyContent: 'center',
     alignItems: 'center',
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     borderTopLeftRadius: 20,
-    borderBottomLeftRadius: 20,
+    borderBottomLeftRadius: 30,
     padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 20,
     marginTop: 20,
-    height: 55,
+    height: 50,
     width: 200,
     justifyContent: 'center',
   },
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 20,
     marginTop: 20,
-    height: 55,
+    height: 50,
     width: 200,
     borderColor: 'green',
     borderWidth: 2,
@@ -275,13 +275,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
     fontWeight: 'bold',
-    fontSize: 20,
+    fontSize: 15,
   },
   buttonText1: {
     color: 'green',
     textAlign: 'center',
     fontWeight: 'bold',
-    fontSize: 20,
+    fontSize: 15,
   },
   serverCircleWrapper: {
     marginBottom: 10,

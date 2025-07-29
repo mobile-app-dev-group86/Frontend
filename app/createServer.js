@@ -136,12 +136,14 @@ const styles = StyleSheet.create({
     top: 10,
     left: 20,
     zIndex: 10,
+    paddingTop: 20,
   },
   title: {
-    fontSize: 26,
+    fontSize: 20,
     color: "#000",
     fontWeight: "bold",
     marginBottom: 8,
+    paddingTop: 60,
   },
   subtitle: {
     fontSize: 14,
@@ -174,13 +176,14 @@ const styles = StyleSheet.create({
   },
   joinButton: {
     flexDirection: "row",
-    alignSelf: "center",
+    // alignSelf: "center",
     backgroundColor: "green",
     padding: 14,
     borderRadius: 25,
     justifyContent: "center",
     marginHorizontal: 20,
     marginBottom: 20,
+    
   },
   joinButtonText: {
     fontSize: 16,

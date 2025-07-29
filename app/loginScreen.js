@@ -169,6 +169,12 @@ if (response.ok) {
           <TouchableOpacity onPress={() => router.push('/signUp')}>
             <Text style={{ color: 'green' }}> Sign Up</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.push('/homeScreen')}>
+            <Text style={{ color: 'green' }}> home</Text>
+          </TouchableOpacity>
+
+          
         </View>
 
         
@@ -190,13 +196,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "",
     marginBottom: 24,
     textAlign: "center",
   },
   input: {
-    height: 50,
+    height: 40,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
@@ -214,7 +220,7 @@ const styles = StyleSheet.create({
   },
   passwordInput: {
     flex: 1,
-    height: 50,
+    height: 35,
   },
   eyeButton: {
     paddingLeft: 10,
@@ -234,7 +240,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 15,
   },
   errorText: {
     color: "red",

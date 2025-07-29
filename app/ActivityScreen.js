@@ -81,9 +81,10 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 8,
         marginBottom: 12,
+        height: 40,
     },
     activityTitle: {
-        fontSize: 18,
+        fontSize: 15,
         color: '#000000',
         marginBottom: 4,
     },

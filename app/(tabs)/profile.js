@@ -9,7 +9,7 @@ import {
   ScrollView,
   Modal,
   FlatList,
-} from 'react-native';
+  } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons, Feather, AntDesign } from '@expo/vector-icons';
 
@@ -59,6 +59,7 @@ const DiscordProfile = () => {
   };
 
   return (
+    
     <ScrollView style={styles.container}>
       
       <View style={styles.banner}>
@@ -160,6 +161,7 @@ const DiscordProfile = () => {
         </View>
       </View>
     </ScrollView>
+    
   );
 };
 

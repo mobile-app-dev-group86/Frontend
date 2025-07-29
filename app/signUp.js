@@ -237,6 +237,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     marginBottom: 12,
+    
   },
   errorText: {
     color: 'red',
